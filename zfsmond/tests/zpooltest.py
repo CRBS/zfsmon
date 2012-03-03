@@ -1,6 +1,6 @@
 import unittest
 import sys
-from zpools import ZPool, parse_size
+from ..src.zpools import ZPool, parse_size
 class TestZPoolFunctions(unittest.TestCase):
     def setUp(self):
         self.VALID_SIZE_VALUES = {'1030134': 1030134, '500K': 512 * 1000, '1.23M': 1.29 * 1000 * 1000, '9.3T': 1.02 * 10**13, 
