@@ -9,6 +9,7 @@ class ZPool(zfsmon.zfsmond.AbstractZFS):
     def property_parse(properties):
     """ Parses properties into ZPool propery key-value pairs, using the default
         fields from `zpool list -H -o all`. Returns the parsed dict. """
+        log = logging.getLogger()
         proplist = properties.split()
         r_props = dict()
         ZPOOL_LIST_FIELDS = ['name', 'size', 'cap', 'altroot', 'health', 'guid', 
@@ -21,7 +22,7 @@ class ZPool(zfsmon.zfsmond.AbstractZFS):
                 r_props[ZPOOL_LIST_FIELDS[i]] = proplist[i]
             except IndexError as e:
                 fields = ", ".join(ZPOOL_LIST_FIELDS[i:])
-                loggin.error("\`zpool list -H -o all\` didn't return as many " +
+                log.error("\`zpool list -H -o all\` didn't return as many " +
                              "fields as expected. The fields [" + fields + "] " +
                              "will not be included in the output. Maybe the zpool" +
                              " executable was updated? Debug: " + str(e))

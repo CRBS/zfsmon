@@ -7,11 +7,15 @@ import sys
 import os
 import subprocess
 import logging
+import requests
 from zfsmon.zfsmond.zpool import ZPool
 from zfsmon.zfsmond.zmount import ZMount
 
 def main():
-    pass
+    # Poll for the updated information we want to send
+    pools = get_pools()
+    mounts = get_mounts()
+    
 
 
 def get_pools():
@@ -21,7 +25,8 @@ def get_pools():
         # Call `zpool list` with -H to not pretty-print the output (no header)
         poolinfostr = subprocess.check_output(['zpool', 'list', '-H', '-o', 'all'])
     except subprocess.CalledProcessError as e:
-        logging.error("The call to `zpool list` failed. Info: " + str(e))
+        log = logging.getLogger()
+        log.error("The call to `zpool list` failed. Info: " + str(e))
         return []
     poolinfo = poolinfostr.splitlines()
     poolobjs = []
@@ -35,7 +40,8 @@ def get_mounts():
         # Call `zfs list` with -H to suppress pretty-print and header row
         mountinfostr = subprocess.check_output(['zfs', 'list', '-H', '-o', 'all'])
     except subprocess.CalledProcessError as e:
-        logging.error("The call to `zfs list` failed. Info: " + str(e))
+        log = logging.getLogger()
+        log.error("The call to `zfs list` failed. Info: " + str(e))
         return []
     mountinfo = mountinfostr.splitlines()
     mountobjs = []

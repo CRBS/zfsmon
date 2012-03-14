@@ -8,6 +8,7 @@ class ZMount(zfsmon.zfsmond.abstractzfs.AbstractZFS):
     """ Parses properties into ZMount property key-value pairs, using the
         default fields from `zfs list -H -o all`. Returns the parsed dict. """
         proplist = properties.split()
+        log = logging.getLogger()
         r_props = dict()
         ZFS_LIST_FIELDS = ['name', 'type', 'creation', 'used', 'avail', 'refer', 
                         'ratio', 'mounted', 'origin', 'quota', 'reserv', 'volsize', 
@@ -29,7 +30,7 @@ class ZMount(zfsmon.zfsmond.abstractzfs.AbstractZFS):
             except IndexError as e:
             # Handling this problem as an exception because it should almost never happen
                 fields = ", ".join(ZFS_LIST_FIELDS[i:])
-                logging.error("\`zfs list -H -o all\` didn't return as many fields as" +
+                log.error("\`zfs list -H -o all\` didn't return as many fields as" +
                               " expected. The fields [" + fields + "] will not be" +
                               " included in the output. Maybe the zfs executable " +
                               "was updated? Debug: " + str(e))

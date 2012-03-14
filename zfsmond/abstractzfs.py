@@ -9,7 +9,9 @@ class AbstractZFS(object):
 
     def __init__(self, properties):
         self.properties = property_parse(properties)
-        self.name = self.properties[0]
+        self.name = self.properties['name']
+        self.properties['size'] = parse_size(self.properties['size'])
+        self.size = self.properties['size']
 
     def __str__(self):
         return self.name + " " + str(self.properties)
