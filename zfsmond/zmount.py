@@ -1,15 +1,18 @@
 # ZMount is a class describing any mountable ZFS filesystem.
 # It extends the AbstractZFS class.
-import zfsmon.zfsmond.abstractzfs
+from zfsmon.zfsmond.abstractzfs import AbstractZFS
 import logging
-class ZMount(zfsmon.zfsmond.abstractzfs.AbstractZFS):
+class ZMount(AbstractZFS):
     @staticmethod
     def property_parse(properties):
     """ Parses properties into ZMount property key-value pairs, using the
         default fields from `zfs list -H -o all`. Returns the parsed dict. """
-        proplist = properties.split()
+        # Split about 8 spaces (used to separate columns in `zfs list`'s output)
+        proplist = properties.split('        ')
         log = logging.getLogger()
         r_props = dict()
+        # Note that the order of this array matters. `zfs -H` prints without headers,
+        # so we will parse in this order the tab-separated info from zfs
         ZFS_LIST_FIELDS = ['name', 'type', 'creation', 'used', 'avail', 'refer', 
                         'ratio', 'mounted', 'origin', 'quota', 'reserv', 'volsize', 
                         'volblock', 'recsize', 'mountpoint', 'sharenfs', 'checksum',
@@ -35,4 +38,11 @@ class ZMount(zfsmon.zfsmond.abstractzfs.AbstractZFS):
                               " included in the output. Maybe the zfs executable " +
                               "was updated? Debug: " + str(e))
 
+        # Parse the size fields into bytes before returning the dict
+        ZFS_SIZE_FIELDS = ['avail', 'quota', 'recsize', 'refer', 'refquota', 'refreserv', 
+                           'refreserv', 'reserv', 'used', 'usedchild', 'usedds', 'usedrefreserv', 
+                           'usedsnap', 'volblock', 'volsize']
+        for key in r_props.iterkeys():
+            if key in ZFS_SIZE_FIELDS:
+                r_props[key] = parse_size(r_props[key])
         return r_props
