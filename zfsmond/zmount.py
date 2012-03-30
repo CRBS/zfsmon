@@ -5,7 +5,7 @@ import logging
 class ZMount(AbstractZFS):
     @staticmethod
     def property_parse(properties):
-    """ Parses properties into ZMount property key-value pairs, using the
+        """ Parses properties into ZMount property key-value pairs, using the
         default fields from `zfs list -H -o all`. Returns the parsed dict. """
         # Split about 8 spaces (used to separate columns in `zfs list`'s output)
         proplist = properties.split('        ')

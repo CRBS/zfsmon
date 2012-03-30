@@ -1,5 +1,5 @@
 class AbstractZFS(object):
-""" An abstract class to represent an object containing data output from 
+    """ An abstract class to represent an object containing data output from 
     any ZFS listing/monitoring program. They should at the least contain
     a self.properties dictionary with key-value pairs for each property
     in the `? list -o all` output, where ? can be zfs or zpool. self.name
@@ -20,7 +20,7 @@ class AbstractZFS(object):
 
     @staticmethod
     def parse_size(size):
-    """ Parses the size value as output from zfs or zpool into a number of bytes.
+        """ Parses the size value as output from zfs or zpool into a number of bytes.
         Checks if the size is '-' or 'none' and returns zero if it is."""
         MULTIPLIERS = {'K': 10**3, 'M': 10**6, 'G': 10**9, 'T': 10**12, 'P': 10**15}
         if size in ['-', 'none']: return 0

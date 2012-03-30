@@ -7,7 +7,7 @@ class ZPool(AbstractZFS):
     # properties is the string output from `zpool list -o all -H`
     @staticmethod
     def property_parse(properties):
-    """ Parses properties into ZPool propery key-value pairs, using the default
+        """ Parses properties into ZPool propery key-value pairs, using the default
         fields from `zpool list -H -o all`. Returns the parsed dict. """
         log = logging.getLogger()
         proplist = properties.split()
