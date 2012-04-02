@@ -8,7 +8,7 @@ class AbstractZFS(object):
     sensibly for its type."""
 
     def __init__(self, properties):
-        self.properties = property_parse(properties)
+        self.properties = self.property_parse(properties)
         self.name = self.properties['name']
 
     def __str__(self):

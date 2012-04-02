@@ -6,8 +6,8 @@ class ZFSHost
     property :id,               Serial
     property :hostname,         String, :required => true, :unique => true
     property :hostdescription,  Text
-    belongs_to :pools,          :model => ZFSPool, :required => false
-    belongs_to :mounts,         :model => ZFSMount, :required => false
+    belongs_to :pools,          :model => 'ZFSPool', :required => false
+    belongs_to :mounts,         :model => 'ZFSMount', :required => false
 
 end
 
@@ -36,7 +36,7 @@ class ZFSPool
     property :guid,             String, :required => true, :unique => true
     
     # The current on-disk version of the  pool.
-    property :version,          Integer :required => true, :default => 0
+    property :version,          Integer, :required => true, :default => 0
 
     # Identifies the default bootable dataset for the root pool.
     property :bootfs,           String

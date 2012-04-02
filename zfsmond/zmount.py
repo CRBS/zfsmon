@@ -8,7 +8,7 @@ class ZMount(AbstractZFS):
         """ Parses properties into ZMount property key-value pairs, using the
         default fields from `zfs list -H -o all`. Returns the parsed dict. """
         # Split about 8 spaces (used to separate columns in `zfs list`'s output)
-        proplist = properties.split('        ')
+        proplist = properties.split('\t')
         log = logging.getLogger()
         r_props = dict()
         # Note that the order of this array matters. `zfs -H` prints without headers,
@@ -44,5 +44,5 @@ class ZMount(AbstractZFS):
                            'usedsnap', 'volblock', 'volsize']
         for key in r_props.iterkeys():
             if key in ZFS_SIZE_FIELDS:
-                r_props[key] = parse_size(r_props[key])
+                r_props[key] = AbstractZFS.parse_size(r_props[key])
         return r_props

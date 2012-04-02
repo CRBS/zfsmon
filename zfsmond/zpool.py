@@ -26,4 +26,8 @@ class ZPool(AbstractZFS):
                              "fields as expected. The fields [" + fields + "] " +
                              "will not be included in the output. Maybe the zpool" +
                              " executable was updated? Debug: " + str(e))
+        ZPOOL_SIZE_FIELDS = ['size', 'free', 'alloc']
+        for key in r_props.iterkeys():
+            if key in ZPOOL_SIZE_FIELDS:
+                r_props[key] = AbstractZFS.parse_size(r_props[key])
         return r_props
