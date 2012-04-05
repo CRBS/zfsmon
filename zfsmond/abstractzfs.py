@@ -1,3 +1,4 @@
+from urllib import quote
 class AbstractZFS(object):
     """ An abstract class to represent an object containing data output from 
     any ZFS listing/monitoring program. They should at the least contain
@@ -5,11 +6,16 @@ class AbstractZFS(object):
     in the `? list -o all` output, where ? can be zfs or zpool. self.name
     should also be defined in a constructor. Subclasses should override
     the property_parse(properties) method to parse the properties string
-    sensibly for its type."""
+    sensibly for its type.
+    
+    properties is a dictionary of properties parsed from `zfs` or `zpool`
+
+    name is a unique name for the mount or pool, and has forward slashes
+    escaped to hyphens so that it can be used as part of a URL. """
 
     def __init__(self, properties):
         self.properties = self.property_parse(properties)
-        self.name = self.properties['name']
+        self.name = quote( self.properties['name'].replace('/', '-') )
 
     def __str__(self):
         return self.name + " " + str(self.properties)

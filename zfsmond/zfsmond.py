@@ -7,28 +7,65 @@ import sys
 import os
 import subprocess
 import logging
-# import requests
+import requests
 import tempfile
+import socket
 from zfsmon.zfsmond.zpool import ZPool
 from zfsmon.zfsmond.zmount import ZMount
+ZFSMON_SERVER = "http://" + "devilray.crbs.ucsd.edu"
+HOSTNAME = socket.gethostname()
 
 def main():
     # Poll for the updated information we want to send
     pools = get_pools()
     mounts = get_mounts()
-    print str(pools)
-    print str(mounts)
-    print "##### Pools #####"
+    
+    # Open the log
+    logging.basicConfig()
+    ZFS_LOG = logging.getLogger("zfsmond")
+
+    # Check if this host has been added yet
+    # The line below checks if we got a 2xx HTTP status code
+    if (requests.get( ZFSMON_SERVER + "/" + HOSTNAME ).status_code / 100) != 2:
+        hostdata = dict()
+        try:
+            with tempfile.TemporaryFile() as tf:
+                subprocess.check_call(['uname', '-a'], stdout=tf)
+                tf.flush()
+                tf.seek(0)
+                hostdata['hostname'] = HOSTNAME
+                hostdata['hostdescription'] = tf.read()
+        except subprocess.CalledProcessError as e:
+            ZFS_LOG.error("uname called failed: " + str(e))
+        
+        r = requests.post( ZFSMON_SERVER + "/" + HOSTNAME,
+                          data=hostdata )
+        if r.status_code / 100 != 2:
+            ZFS_LOG.error('An HTTP {0} error was encountered when creating a new host on {1}. '.format(str(r.status_code), ZFSMON_SERVER) + 
+                           'The server replied with this: {0}'.format(r.response.text))
+        else:
+            ZFS_LOG.info('Successfully added new host ' + HOSTNAME ' on ' + ZFSMON_SERVER)
+    
+    # Once we're sure that this host exists, update its pools and mounts
+    updatedpools = dict()
     for pool in pools:
-        for key in pool.properties.iterkeys():
-            print key + " -> " + str(pool.properties[key])
-    print "\n#### Mounts ####"
-    for mount in mounts:
-        print "\n\n----$ " + mount.name + " $----"
-        for key in mount.properties.iterkeys():
-            print key + " -> " + str(mount.properties[key])
-
-
+        postreq = requests.post( ZFSMON_SERVER + "/" + HOSTNAME + "/" + pool.name,
+                                 data=pool.properties )
+        if postreq.status_code / 100 != 2:
+            ZFS_LOG.error('An HTTP {statuscode} error was encountered when updating the pool ' +
+                          '{hostname}/{poolname} on {server}.'.format( statuscode=str(postreq.status_code),
+                                                                      hostname=HOSTNAME,
+                                                                      poolname=pool.name,
+                                                                      server=ZFSMON_SERVER ))
+        else:
+            updatedpools[pool.name] = postreq.status_code
+    if len(updatedpools) > 0:
+        for p in updatedpools.iterkeys():
+            if updatedpools[p] == 201:
+                ZFS_LOG.info('Successfully created new pool {0}/{1} on {2}.'.format( HOSTNAME, p, ZFSMON_SERVER ))
+            else:
+                ZFS_LOG.info('Successfully updated {0}/{1} on {2}.'.format( HOSTNAME, p, ZFSMON_SERVER ))
+    
 
 def get_pools():
     """ Gets the active ZFS pools by calling `zpool list` and parsing the output. Returns a list of ZPool objects
@@ -44,7 +81,7 @@ def get_pools():
                 poolinfostr = tf.read()
                 print "poolinfostr: " + poolinfostr
     except subprocess.CalledProcessError as e:
-        log = logging.getLogger()
+        log = logging.getLogger("zfsmond")
         log.error("The call to `zpool list` failed. Info: " + str(e))
         print "zpool list failed"
         return []
@@ -64,7 +101,7 @@ def get_mounts():
                 tf.seek(0)
                 mountinfostr = tf.read()
     except subprocess.CalledProcessError as e:
-        log = logging.getLogger()
+        log = logging.getLogger("zfsmond")
         log.error("The call to `zfs list` failed. Info: " + str(e))
         return []
     mountinfo = mountinfostr.splitlines()

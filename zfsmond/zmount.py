@@ -9,8 +9,10 @@ class ZMount(AbstractZFS):
         default fields from `zfs list -H -o all`. Returns the parsed dict. """
         # Split about 8 spaces (used to separate columns in `zfs list`'s output)
         proplist = properties.split('\t')
-        log = logging.getLogger()
+
+        log = logging.getLogger("zfsmond")
         r_props = dict()
+        
         # Note that the order of this array matters. `zfs -H` prints without headers,
         # so we will parse in this order the tab-separated info from zfs
         ZFS_LIST_FIELDS = ['name', 'type', 'creation', 'used', 'avail', 'refer', 
@@ -26,6 +28,7 @@ class ZMount(AbstractZFS):
                         'keysource', 'keystatus', 'rekeydate', 'rstchown', 
                         'org.opensolaris.caiman:install', 
                         'org.opensolaris.libbe:uuid']
+        
         # Parse the value for each key and put the k-v pair into the dict
         for i in xrange(len(ZFS_LIST_FIELDS)):
             try:
@@ -44,5 +47,8 @@ class ZMount(AbstractZFS):
                            'usedsnap', 'volblock', 'volsize']
         for key in r_props.iterkeys():
             if key in ZFS_SIZE_FIELDS:
-                r_props[key] = AbstractZFS.parse_size(r_props[key])
+                try:
+                    r_props[key] = AbstractZFS.parse_size(r_props[key])
+                except ValueError as e:
+                    log.warning( '{0} -> {1} could not be parsed as a size in bytes.'.format(key, str(r_props[key])) )
         return r_props
