@@ -6,6 +6,7 @@ class ZFSHost
     property :id,               Serial
     property :hostname,         String, :required => true, :unique => true
     property :hostdescription,  Text
+    property :lastupdate,       DateTime
     belongs_to :pools,          :model => 'ZFSPool', :required => false
     belongs_to :mounts,         :model => 'ZFSMount', :required => false
 
@@ -15,6 +16,7 @@ class ZFSPool
     include DataMapper::Resource
 
     property :id,               Serial
+    property :lastupdate,       DateTime
     has 1, :host,               :model => 'ZFSHost'
 
     # The name of the ZFS pool
@@ -87,6 +89,7 @@ class ZFSMount
     include DataMapper::Resource
 
     property :id,               Serial
+    property :lastupdate,       DateTime
     has 1, :host,               :model => 'ZFSHost'
 
     # The name of the mount
