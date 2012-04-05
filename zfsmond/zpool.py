@@ -3,7 +3,9 @@
 from zfsmon.zfsmond.abstractzfs import AbstractZFS
 import logging
 class ZPool(AbstractZFS):
-    # __init__ is inherited from ZMount(self, properties)
+    def __init__(self, properties):
+        super(ZPool, self).__init__(properties)
+
     # properties is the string output from `zpool list -o all -H`
     @staticmethod
     def property_parse(properties):

@@ -1,4 +1,4 @@
-from urllib import quote
+from urllib2 import quote
 class AbstractZFS(object):
     """ An abstract class to represent an object containing data output from 
     any ZFS listing/monitoring program. They should at the least contain
@@ -40,6 +40,6 @@ class AbstractZFS(object):
                    # Since any size will be of the form '5.2T', strip the last
                    # character, parse as a float, then multiply by a multiplier
                    # and cast as an int to get the size in bytes
-                   return int( float(size[:len(size)-1]) * MULTIPLIERS[m] )
+                   return int( float(size[:-1]) * MULTIPLIERS[m] )
         raise ValueError("Could not parse " + size + " as a size in bytes.")
 

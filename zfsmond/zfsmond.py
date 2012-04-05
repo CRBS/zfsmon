@@ -10,16 +10,15 @@ import logging
 import requests
 import tempfile
 import socket
+import time
+
 from zfsmon.zfsmond.zpool import ZPool
 from zfsmon.zfsmond.zmount import ZMount
 ZFSMON_SERVER = "http://" + "devilray.crbs.ucsd.edu"
 HOSTNAME = socket.gethostname()
+UPDATE_INTERVAL = 60
 
 def main():
-    # Poll for the updated information we want to send
-    pools = get_pools()
-    mounts = get_mounts()
-    
     # Open the log
     logging.basicConfig()
     ZFS_LOG = logging.getLogger("zfsmond")
@@ -42,48 +41,73 @@ def main():
                           data=hostdata )
         if r.status_code / 100 != 2:
             ZFS_LOG.error('An HTTP {0} error was encountered when creating a new host on {1}. '.format(str(r.status_code), ZFSMON_SERVER) + 
-                           'The server replied with this: {0}'.format(r.response.text))
+                           'The server replied with this: {0}'.format(r.text))
         else:
-            ZFS_LOG.info('Successfully added new host ' + HOSTNAME ' on ' + ZFSMON_SERVER)
+            ZFS_LOG.info('Successfully added new host ' + HOSTNAME + ' on ' + ZFSMON_SERVER)
     
-    # Once we're sure that this host exists, update its pools and mounts
-    updatedpools = dict()
-    for pool in pools:
-        postreq = requests.post( ZFSMON_SERVER + "/" + HOSTNAME + "/" + pool.name,
-                                 data=pool.properties )
+    # Main loop
+    while(True): 
+        # Poll for the updated information we want to send
+        pools = get_pools()
+        mounts = get_mounts()
+        for mount in mounts:
+            print mount.name
+        # Do the updates once we're sure that this host exists
+        if not post_update(pools):
+            ZFS_LOG.warning("Not all pools could be updated.")
+        if not post_update(mounts):
+            ZFS_LOG.warning("Not all mounts could be updated.")
+
+        time.sleep(UPDATE_INTERVAL)
+            
+def post_update(zfsobjs, hostname=HOSTNAME, server=ZFSMON_SERVER):
+    """ POSTs the updated properties for a ZFS object to the webservice.
+        zfsobjs is a list of AbstractZFS objects
+        hostname is the hostname of this computer
+        server is the zfs monitor server's hostname """
+    ZFS_LOG = logging.getLogger("zfsmond.http")
+    updated = dict()
+    for obj in zfsobjs:
+        # Check if this is a pool or a mount, and POST to the appropriate resource
+        if isinstance(obj, ZPool):
+            rescollection = "pools"
+        elif isinstance(obj, ZMount):
+            rescollection = "mounts"
+        else: raise TypeError("Can't post a non-AbstractZFS object to the web service.")
+
+        postreq = requests.post( server + "/" + hostname + "/" + rescollection + "/" + obj.name,
+                                 data=obj.properties )
         if postreq.status_code / 100 != 2:
-            ZFS_LOG.error('An HTTP {statuscode} error was encountered when updating the pool ' +
-                          '{hostname}/{poolname} on {server}.'.format( statuscode=str(postreq.status_code),
-                                                                      hostname=HOSTNAME,
-                                                                      poolname=pool.name,
-                                                                      server=ZFSMON_SERVER ))
+            ZFS_LOG.error(('An HTTP {statuscode} error was encountered when updating the {resource} ' +
+                          '{hname}/{resname} on {serv}.').format( statuscode=str(postreq.status_code),
+                                                                   resource=rescollection[:-1],
+                                                                   hname=hostname,
+                                                                   resname=obj.name,
+                                                                   serv=server ))
         else:
-            updatedpools[pool.name] = postreq.status_code
-    if len(updatedpools) > 0:
-        for p in updatedpools.iterkeys():
-            if updatedpools[p] == 201:
-                ZFS_LOG.info('Successfully created new pool {0}/{1} on {2}.'.format( HOSTNAME, p, ZFSMON_SERVER ))
+            updated[obj.name] = postreq.status_code
+    if len(updated) > 0:
+        for res in updated.iterkeys():
+            if updated[res] == 201:
+                ZFS_LOG.info('Successfully created new pool {0}/{1} on {2}.'.format( HOSTNAME, res, ZFSMON_SERVER ))
             else:
-                ZFS_LOG.info('Successfully updated {0}/{1} on {2}.'.format( HOSTNAME, p, ZFSMON_SERVER ))
-    
+                ZFS_LOG.info('Successfully updated {0}/{1} on {2}.'.format( HOSTNAME, res, ZFSMON_SERVER ))
+        return True
+    return False
 
 def get_pools():
     """ Gets the active ZFS pools by calling `zpool list` and parsing the output. Returns a list of ZPool objects
         populated with the properties returned by zpool list -H -o all. """
-    print "getting pools"
     try:
         with tempfile.TemporaryFile() as tf:
                 # Call `zpool list` with -H to not pretty-print the output (no header)
-                print "tf is defined as " + str(tf)
                 subprocess.check_call(['zpool', 'list', '-H', '-o', 'all'], stdout=tf)
                 tf.flush()
                 tf.seek(0)
                 poolinfostr = tf.read()
-                print "poolinfostr: " + poolinfostr
     except subprocess.CalledProcessError as e:
         log = logging.getLogger("zfsmond")
         log.error("The call to `zpool list` failed. Info: " + str(e))
-        print "zpool list failed"
         return []
     poolinfo = poolinfostr.splitlines()
     poolobjs = []

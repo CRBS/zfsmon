@@ -3,6 +3,9 @@
 from zfsmon.zfsmond.abstractzfs import AbstractZFS
 import logging
 class ZMount(AbstractZFS):
+    def __init__(self, properties):
+        super(ZMount, self).__init__(properties)
+
     @staticmethod
     def property_parse(properties):
         """ Parses properties into ZMount property key-value pairs, using the
