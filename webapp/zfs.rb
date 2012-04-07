@@ -20,7 +20,7 @@ def get_host_record( hostget )
 end
 
 def get_pool_record( hostrec, pool )
-    ZFSPool.first_or_create :host => hostrec, :name => pool
+    hostrec.pools.first_or_create :host => hostrec, :name => pool
 end
 
 def host_not_found( request="" )
@@ -76,8 +76,7 @@ end
 
 get '/:host/pools/?' do
     @host = get_host_record params[:host]
-    "Host: #{@host.hostname}\nPools: "
-    @host.pools.each { |p| p.name }
+    "Host: #{@host.hostname}\nPools: #{@host.pools.length.to_s}"
 end
 
 get '/:host/pools/:pool/?' do
@@ -102,9 +101,7 @@ post '/:host/pools/:pool/?' do
     @pool = get_pool_record @host, params[:pool]
 
     request.POST.each do |k, v|
-        puts k + " -> " + v
         if not $ZFS_POOL_FIELDS.include? k
-            puts "skipping #{k}"
             next
         else
             if $ZFS_POOL_SIZE_FIELDS.include? k
@@ -113,32 +110,39 @@ post '/:host/pools/:pool/?' do
             
             if $ZFS_ENUM_FIELDS.include? k
                 v = v.downcase
-                puts "converted #{k} to #{v}"
             end
+
+            # GUIDs sometimes get parsed as integers..
+            # It's easier just to convert them back here.
             if k == 'guid'
                 v = v.to_s
             end
+
+            # ZFS returns 'on' and 'off' for certain fields but DM expects
+            # boolean values.
             if v == 'on'
                 v = true
             elsif v == 'off'
                 v = false
             end
-            puts "setting #{k.to_s} to #{v.to_s}"
-            @pool.attributes k.to_sym => v
+
+            # Cap is a percentage for some reason
+            if k == 'cap'
+                v = v[0..-1].to_i / 100
+            end
+
+            # Dedup is a float but ZFS puts an 'x' on the end
+            if k == 'dedup'
+                v = v[0..-1].to_f
+            end
+            @pool.attribute_set k.to_sym, v
         end
     end
+    @pool.attribute_set :host, @host
     if @pool.dirty?
-        puts "#{@pool.name} is dirty... saving"
         @pool.attributes :lastupdate => Time.now
         @pool.save
     else
         puts "not saving #{@pool.name}"
     end
-    if not @pool.saved?
-        @pool.errors.each {|e| puts e }
-    end
 end
-            
-            
-        
-

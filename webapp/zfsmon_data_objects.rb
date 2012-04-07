@@ -23,9 +23,9 @@ class ZFSPool
     property :name,             String, :required => true
 
     # Each pool must specify its capacity, free space, and allocated space in bytes
-    property :size,             Integer, :required => true, :min => 0, :default => 0
-    property :cap,              Integer, :required => true, :min => 0, :default => 0
-    property :free,             Integer, :required => true, :min => 0, :default => 0
+    property :size,             Integer, :required => true, :min => 0, :max => 9223372036854775808, :default => 0
+    property :cap,              Decimal, :required => true, :min => 0.0, :max => 1.0, :default => 1.0
+    property :free,             Integer, :required => true, :min => 0, :max => 9223372036854775808, :default => 0
 
     # Alternate root directory.  If  set,  this  directory  is
     # prepended  to any mount points within the pool.
