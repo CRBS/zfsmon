@@ -14,7 +14,7 @@ import time
 
 from zfsmon.zfsmond.zpool import ZPool
 from zfsmon.zfsmond.zmount import ZMount
-ZFSMON_SERVER = "http://" + "devilray.crbs.ucsd.edu"
+ZFSMON_SERVER = "http://" + "169.228.147.132:4567"
 HOSTNAME = socket.gethostname()
 UPDATE_INTERVAL = 60
 
@@ -25,6 +25,7 @@ def main():
 
     # Check if this host has been added yet
     # The line below checks if we got a 2xx HTTP status code
+    print str(requests.get( ZFSMON_SERVER + "/" + HOSTNAME ).status_code)
     if (requests.get( ZFSMON_SERVER + "/" + HOSTNAME ).status_code / 100) != 2:
         hostdata = dict()
         try:
@@ -43,7 +44,7 @@ def main():
             ZFS_LOG.error('An HTTP {0} error was encountered when creating a new host on {1}. '.format(str(r.status_code), ZFSMON_SERVER) + 
                            'The server replied with this: {0}'.format(r.text))
         else:
-            ZFS_LOG.info('Successfully added new host ' + HOSTNAME + ' on ' + ZFSMON_SERVER)
+            ZFS_LOG.warning('Successfully added new host ' + HOSTNAME + ' on ' + ZFSMON_SERVER)
     
     # Main loop
     while(True): 

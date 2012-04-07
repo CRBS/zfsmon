@@ -7,8 +7,8 @@ class ZFSHost
     property :hostname,         String, :required => true, :unique => true
     property :hostdescription,  Text
     property :lastupdate,       DateTime
-    belongs_to :pools,          :model => 'ZFSPool', :required => false
-    belongs_to :mounts,         :model => 'ZFSMount', :required => false
+    has n, :pools,              :model => 'ZFSPool'
+    has n, :mounts,             :model => 'ZFSMount'
 
 end
 
@@ -17,7 +17,7 @@ class ZFSPool
 
     property :id,               Serial
     property :lastupdate,       DateTime
-    has 1, :host,               :model => 'ZFSHost'
+    belongs_to :host,           :model => 'ZFSHost'
 
     # The name of the ZFS pool
     property :name,             String, :required => true
@@ -90,7 +90,7 @@ class ZFSMount
 
     property :id,               Serial
     property :lastupdate,       DateTime
-    has 1, :host,               :model => 'ZFSHost'
+    belongs_to :host,           :model => 'ZFSHost'
 
     # The name of the mount
     property :name,             String, :required => true

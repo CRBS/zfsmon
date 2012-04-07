@@ -46,7 +46,7 @@ class ZMount(AbstractZFS):
 
         # Parse the size fields into bytes before returning the dict
         ZFS_SIZE_FIELDS = ['avail', 'quota', 'recsize', 'refer', 'refquota', 'refreserv', 
-                           'refreserv', 'reserv', 'used', 'usedchild', 'usedds', 'usedrefreserv', 
+                           'reserv', 'used', 'usedchild', 'usedds', 'usedrefreserv', 
                            'usedsnap', 'volblock', 'volsize']
         for key in r_props.iterkeys():
             if key in ZFS_SIZE_FIELDS:
