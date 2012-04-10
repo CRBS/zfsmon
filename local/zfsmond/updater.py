@@ -19,6 +19,8 @@ ZFSMON_SERVER = "http://" + "169.228.147.132:4567"
 HOSTNAME = socket.gethostname()
 
 def main():
+    global ZFSMON_SERVER
+    global HOSTNAME
     # Open the log
     logging.basicConfig()
     ZFS_LOG = logging.getLogger("zfsmond")
