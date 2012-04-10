@@ -51,7 +51,6 @@ def main():
                 
     # Check if this host has been added yet
     # The line below checks if we got a 2xx HTTP status code
-    print str(requests.get( ZFSMON_SERVER + "/" + HOSTNAME ).status_code)
     if (requests.get( ZFSMON_SERVER + "/" + HOSTNAME ).status_code / 100) != 2:
         hostdata = dict()
         try:
@@ -69,23 +68,26 @@ def main():
         if r.status_code / 100 != 2:
             ZFS_LOG.error('An HTTP {0} error was encountered when creating a new host on {1}. '.format(str(r.status_code), ZFSMON_SERVER) + 
                            'The server replied with this: {0}'.format(r.text))
+            sys.exit(2)
         else:
             ZFS_LOG.warning('Successfully added new host ' + HOSTNAME + ' on ' + ZFSMON_SERVER)
     
-    # Main loop
-    while(True): 
-        # Poll for the updated information we want to send
-        pools = get_pools()
-        mounts = get_mounts()
-        for mount in mounts:
-            print mount.name
-        # Do the updates once we're sure that this host exists
+    # Poll for the updated information we want to send
+    pools = get_pools()
+    mounts = get_mounts()
+    # Do the updates once we're sure that this host exists
+    try:
         if not post_update(pools):
             ZFS_LOG.warning("Not all pools could be updated.")
+            return 1
         if not post_update(mounts):
             ZFS_LOG.warning("Not all mounts could be updated.")
-
-        time.sleep(UPDATE_INTERVAL)
+            return 1
+    except TypeError as e:
+        ZFS_LOG.error(str(e))
+        ZFS_LOG.error("Update failed.")
+        return 1
+    return 0
             
 def post_update(zfsobjs, hostname=HOSTNAME, server=ZFSMON_SERVER):
     """ POSTs the updated properties for a ZFS object to the webservice.
