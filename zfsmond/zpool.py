@@ -1,6 +1,6 @@
 # ZPool is a class describing ZFS pools and their properties.
 # It extends the AbstractZFS class.
-from zfsmon.zfsmond.abstractzfs import AbstractZFS
+from zfsmond.abstractzfs import AbstractZFS
 import logging
 class ZPool(AbstractZFS):
     def __init__(self, properties):

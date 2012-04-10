@@ -11,18 +11,43 @@ import requests
 import tempfile
 import socket
 import time
+import ConfigParser as configparser
 
-from zfsmon.zfsmond.zpool import ZPool
-from zfsmon.zfsmond.zmount import ZMount
+from zfsmond.zpool import ZPool
+from zfsmond.zmount import ZMount
 ZFSMON_SERVER = "http://" + "169.228.147.132:4567"
 HOSTNAME = socket.gethostname()
-UPDATE_INTERVAL = 60
 
 def main():
     # Open the log
     logging.basicConfig()
     ZFS_LOG = logging.getLogger("zfsmond")
 
+   # Open config file
+    config = configparser.SafeConfigParser()
+    try:
+        with open('zfsmond.conf', 'r') as f:
+            config.readfp(f)
+    except IOError as e:
+        ZFS_LOG.debug(str(e))
+        ZFS_LOG.error("No configuration file was found. Using hard-coded defaults.")
+        config = None
+
+    # Parse config
+    if config:
+        if not config.has_section('Network'):
+            ZFS_LOG.warning("No 'Network' section was found in the configuration file. Using hard-coded defaults.")
+        else:
+            if not config.has_option('Network', 'monitor_server'):
+                ZFS_LOG.warning("The monitor_server option is missing in the configuration file.")
+            elif: (c = config.get('Network', 'monitor_server')) != '':
+                    ZFSMON_SERVER = c
+                    # Strip the trailing slash if there is one
+                    if ZFSMON_SERVER[-1:] == '/':
+                        ZFSMON_SERVER = ZFSMON_SERVER[:-1]
+            if config.has_option('Network', 'hostname'):
+                    HOSTNAME = config.get('Network', 'hostname'):
+                
     # Check if this host has been added yet
     # The line below checks if we got a 2xx HTTP status code
     print str(requests.get( ZFSMON_SERVER + "/" + HOSTNAME ).status_code)

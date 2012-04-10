@@ -1,6 +1,6 @@
 # ZMount is a class describing any mountable ZFS filesystem.
 # It extends the AbstractZFS class.
-from zfsmon.zfsmond.abstractzfs import AbstractZFS
+from zfsmond.abstractzfs import AbstractZFS
 import logging
 class ZMount(AbstractZFS):
     def __init__(self, properties):
