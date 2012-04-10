@@ -26,11 +26,11 @@ def main():
    # Open config file
     config = configparser.SafeConfigParser()
     try:
-        with open('zfsmond.conf', 'r') as f:
+        with open('/etc/zfsmond.conf', 'r') as f:
             config.readfp(f)
     except IOError as e:
         ZFS_LOG.debug(str(e))
-        ZFS_LOG.error("No configuration file was found. Using hard-coded defaults.")
+        ZFS_LOG.error("No configuration file was found at '/etc/zfsmond.conf'. Using hard-coded defaults.")
         config = None
 
     # Parse config
@@ -40,13 +40,14 @@ def main():
         else:
             if not config.has_option('Network', 'monitor_server'):
                 ZFS_LOG.warning("The monitor_server option is missing in the configuration file.")
-            elif: (c = config.get('Network', 'monitor_server')) != '':
-                    ZFSMON_SERVER = c
-                    # Strip the trailing slash if there is one
-                    if ZFSMON_SERVER[-1:] == '/':
-                        ZFSMON_SERVER = ZFSMON_SERVER[:-1]
+            else: 
+                c = config.get('Network', 'monitor_server')
+                if c != '': ZFSMON_SERVER = c
+                # Strip the trailing slash if there is one
+                if ZFSMON_SERVER[-1:] == '/':
+                    ZFSMON_SERVER = ZFSMON_SERVER[:-1]
             if config.has_option('Network', 'hostname'):
-                    HOSTNAME = config.get('Network', 'hostname'):
+                HOSTNAME = config.get('Network', 'hostname')
                 
     # Check if this host has been added yet
     # The line below checks if we got a 2xx HTTP status code
