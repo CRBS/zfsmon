@@ -2,7 +2,7 @@ require 'sinatra'
 require 'data_mapper'
 require 'yaml'
 
-DataMapper::Logger.new(STDOUT, :debug)
+# DataMapper::Logger.new(STDOUT, :debug)
 DataMapper.setup(:default, "sqlite3://#{Dir.pwd}/zfsdata.db")
 
 require "#{File.dirname(__FILE__)}/zfsmon_data_objects"
@@ -10,31 +10,15 @@ require "#{File.dirname(__FILE__)}/zfs_utils"
 
 DataMapper.finalize.auto_upgrade!
 
-def get_host_record( hostget )
-    if hostget.is_int?
-        @host = ZFSHost.get hostget.to_i
-    else
-        @host = ZFSHost.first :hostname => hostget
-    end
-    return @host
-end
-
-def get_pool_record( hostrec, pool )
-    hostrec.pools.first_or_create :host => hostrec, :name => pool
-end
-
-def host_not_found( request="" )
-    status 404
-    "The provided host ID or hostname " + request.to_s + " could not be found in the database."
-end
-
-def pool_not_found( request="" )
-    status 404
-    "The provided pool ID or name " + request.to_s + " could not be found in the database."
+configure do
+    enable :static
 end
 
 get '/' do
-    erb :index
+    @activehosts = ZFSHost.activehosts
+    @stalehosts = ZFSHost.stalehosts
+    @title = 'All Hosts'
+    erb :allhosts
 end
 
 
@@ -42,7 +26,8 @@ end
 get '/:host/?' do
     @host = get_host_record params[:host]
     if @host
-        "Hostname: #{@host.hostname}\nDescription: #{@host.hostdescription}\nLast Updated: #{@host.lastupdate.to_s}"
+        @title = 'Host ' << @host.hostname
+        erb :hostview
     else
         host_not_found params[:host]
     end

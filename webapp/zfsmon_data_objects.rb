@@ -9,6 +9,14 @@ class ZFSHost
     property :lastupdate,       DateTime
     has n, :pools,              :model => 'ZFSPool'
     has n, :mounts,             :model => 'ZFSMount'
+    
+    def self.activehosts
+        all :lastupdate.gt => Time.now - (60 * 60 * 24), :order => [ :hostname.asc ]
+    end
+    
+    def self.stalehosts
+        all :lastupdate.lte => Time.now - (60 * 60 * 24), :order => [ :hostname.asc ]
+    end
 
 end
 
@@ -26,7 +34,8 @@ class ZFSPool
     property :size,             Integer, :required => true, :min => 0, :max => 9223372036854775808, :default => 0
     property :cap,              Decimal, :required => true, :min => 0.0, :max => 1.0, :default => 1.0
     property :free,             Integer, :required => true, :min => 0, :max => 9223372036854775808, :default => 0
-
+    property :alloc,            Integer, :required => true, :min => 0, :max => 9223372036854775808, :default => 0
+    
     # Alternate root directory.  If  set,  this  directory  is
     # prepended  to any mount points within the pool.
     property :altroot,          String, :default => '-'

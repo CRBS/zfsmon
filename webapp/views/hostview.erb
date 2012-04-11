@@ -1,0 +1,31 @@
+<div class="row">
+    <div class="span6">
+        <h2><%= @host.hostname %></h2>
+    </div>
+</div>
+<div class="row">
+    <div class="span6">
+        <p><%= @host.hostdescription %></p>
+    </div>
+</div>
+<div class="row">
+    <div class="span6">
+        <h3><a href="/<%= @host.hostname %>/pools"><%= @host.pools.count %> Pools</a></h3>
+    </div>
+</div>
+<hr />
+
+<div class="row">
+<% @host.pools.each_with_index do |pool, index| %>
+    <div class="span3">
+        <h4><%= pool.name %></h4>
+        <p><%= pool.alloc / (1000 * 1000 * 1000) %> GB used</p>
+        <p><%= pool.free / (1000 * 1000 * 1000) %> GB free</p>
+        <p><%= (pool.alloc + pool.free) / (1000 * 1000 * 1000) %> GB total</p>
+        <p><strong>Health:</strong> <%= pool.health %></p>
+    </div>
+    <% if (index % 4 == 0) && (index > 0) %>
+        </div><div class="row">
+    <% end %>
+<% end %>
+</div>

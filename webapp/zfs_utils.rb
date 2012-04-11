@@ -9,6 +9,30 @@ class String
             true
     end
 end
+
+def get_host_record( hostget )
+    if hostget.is_int?
+        @host = ZFSHost.get hostget.to_i
+    else
+        @host = ZFSHost.first :hostname => hostget
+    end
+    return @host
+end
+
+def get_pool_record( hostrec, pool )
+    hostrec.pools.first_or_create :host => hostrec, :name => pool
+end
+
+def host_not_found( request="" )
+    status 404
+    "The provided host ID or hostname " + request.to_s + " could not be found in the database."
+end
+
+def pool_not_found( request="" )
+    status 404
+    "The provided pool ID or name " + request.to_s + " could not be found in the database."
+end
+
 $ZFS_ENUM_FIELDS = ['health', 'failmode', 'type', 'checksum', 'compress', 'snapdir',
                     'aclinherit', 'canmount', 'version', 'normalization', 'case',
                     'primarycache', 'secondarycache', 'logbias', 'dedup', 'sync',

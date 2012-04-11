@@ -1,0 +1,26 @@
+<% if @activehosts then %>
+    <div class="row">
+    <% @activehosts.each_with_index do |host, index| %>
+            <div class="span4">
+                <h2><a href="/<%= host.hostname %>"><%= host.hostname %></a></h2>
+                <p><%= host.hostdescription %></p>
+                <ul>
+                    <li><a href="/<%= host.hostname %>/pools">Pools</a>: <%= host.pools.count %></li>
+                    <li><a href="/<%= host.hostname %>/mounts">Mounts</a>: <%= host.mounts.count %></li>
+                </ul>
+            </div>
+        <% if (index % 2 == 0) && (index > 0) %>
+            </div><div class="row"><div class="span4">
+        <% end %>
+    <% end %>
+    </div>
+    
+<% else %>
+
+    <div class="row">
+        <div class="span8">
+            <p>No active hosts were found.</p>
+        </div>
+    </div>
+    
+<% end %>

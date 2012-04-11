@@ -79,10 +79,10 @@ def main():
     mounts = get_mounts()
     # Do the updates once we're sure that this host exists
     try:
-        if not post_update(pools):
+        if not post_update(pools, HOSTNAME, ZFSMON_SERVER):
             ZFS_LOG.warning("Not all pools could be updated.")
             return 1
-        if not post_update(mounts):
+        if not post_update(mounts, HOSTNAME, ZFSMON_SERVER):
             ZFS_LOG.warning("Not all mounts could be updated.")
             return 1
     except TypeError as e:
