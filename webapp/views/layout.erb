@@ -9,6 +9,9 @@
     </head>
     <body>
         <div class="container">
+            <div class="page-header">
+                <h1>zfs monitor <%= if @title then "&mdash; #{@title}" else nil end %></h1>
+            </div>
             <%= yield %>
         </div>
     </body>

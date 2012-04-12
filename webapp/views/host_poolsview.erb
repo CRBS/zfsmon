@@ -1,0 +1,41 @@
+<div class="row">
+    <div class="span6">
+        <h3><%= @host.hostname %>/pools</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="span6">
+        <p><%= @host.hostdescription %></p>
+    </div>
+</div>
+
+<hr />
+<style type="text/css">
+td {
+    padding-right: 15px;
+}
+</style>
+<% @host.pools.each_with_index do |pool, index| %>
+    <div class="row">
+        <div class="span8">
+            <h4><a href="/<%= @host.hostname << '/' << pool.name %>"><%= pool.name %></a></h4>
+            <table class="table-striped">
+                <tr><td><strong>Size: </strong></td><td><%= pool.size %></td></tr>
+                <tr><td><strong>Used: </strong></td><td><%= pool.alloc %></td></tr>
+                <tr><td><strong>Free: </strong></td><td><%= pool.free %></td></tr>
+                <tr><td><strong>Health: </strong></td><td>
+                    <% if pool.health.to_s.eql? 'online' then %>
+                        <span class="label label-success">
+                    <% else %>
+                        <span class="label label-warning">
+                    <% end %>
+                    <%= pool.health %></span></td></tr>
+                <tr><td><strong>Version: </strong></td><td><%= pool.version %></td></tr>
+                <tr><td><strong>Delegation: </strong></td><td><%= pool.delegation %></td></tr>
+                <tr><td><strong>AutoReplace: </strong></td><td><%= pool.replace %></td></tr>
+                <tr><td><strong>Failure Mode:</strong></td><td><%= pool.failmode %></td></tr>
+            </table>
+            &nbsp;
+        </div>
+    </div>
+<% end %>

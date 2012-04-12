@@ -1,12 +1,17 @@
-<% if @activehosts then %>
+<% if @allhosts then %>
     <div class="row">
-    <% @activehosts.each_with_index do |host, index| %>
-            <div class="span4">
+    <% @allhosts.each_with_index do |host, index| %>
+            <div class="span4 well">
+                <% if host.lastupdate < (DateTime.now - (60 * 60 * 24)) then %>
+                        <div class="alert-info">
+                            <strong>Warning:</strong> This host has not checked in recently.
+                        </div>
+                <% end %>
                 <h2><a href="/<%= host.hostname %>"><%= host.hostname %></a></h2>
                 <p><%= host.hostdescription %></p>
                 <ul>
                     <li><a href="/<%= host.hostname %>/pools">Pools</a>: <%= host.pools.count %></li>
-                    <li><a href="/<%= host.hostname %>/mounts">Mounts</a>: <%= host.mounts.count %></li>
+                    <li><a href="/<%= host.hostname %>/mounts">Filesystems</a>: <%= host.mounts.count %></li>
                 </ul>
             </div>
         <% if (index % 2 == 0) && (index > 0) %>

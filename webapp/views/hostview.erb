@@ -1,6 +1,6 @@
 <div class="row">
     <div class="span6">
-        <h2><%= @host.hostname %></h2>
+        <h3><%= @host.hostname %></h3>
     </div>
 </div>
 <div class="row">
@@ -8,21 +8,30 @@
         <p><%= @host.hostdescription %></p>
     </div>
 </div>
-<div class="row">
-    <div class="span6">
-        <h3><a href="/<%= @host.hostname %>/pools"><%= @host.pools.count %> Pools</a></h3>
-    </div>
-</div>
+
 <hr />
 
 <div class="row">
+    <div class="span4">
+        <h3><a href="/<%= @host.hostname %>/pools"><%= @host.pools.count %> Pools</a></h3>
+        &nbsp;
+    </div>
+</div>
+<div class="row">
 <% @host.pools.each_with_index do |pool, index| %>
-    <div class="span3">
-        <h4><%= pool.name %></h4>
+    <div class="span3 well">
+        <h4><a href="/<%= @host.hostname %>/pools/<%= pool.name %>"><%= pool.name %></a></h4>
         <p><%= pool.alloc / (1000 * 1000 * 1000) %> GB used</p>
         <p><%= pool.free / (1000 * 1000 * 1000) %> GB free</p>
         <p><%= (pool.alloc + pool.free) / (1000 * 1000 * 1000) %> GB total</p>
-        <p><strong>Health:</strong> <%= pool.health %></p>
+        <p><strong>Health:</strong> 
+            <% if pool.health.to_s.eql? 'online' then %>
+                <span class="label label-success">
+            <% else %>
+                <span class="label label-warning">
+            <% end %>
+            <%= pool.health %>
+        </span></p>
     </div>
     <% if (index % 4 == 0) && (index > 0) %>
         </div><div class="row">

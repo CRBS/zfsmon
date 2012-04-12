@@ -15,8 +15,7 @@ configure do
 end
 
 get '/' do
-    @activehosts = ZFSHost.activehosts
-    @stalehosts = ZFSHost.stalehosts
+    @allhosts = ZFSHost.all :order => [ :hostname.asc ]
     @title = 'All Hosts'
     erb :allhosts
 end
@@ -26,7 +25,7 @@ end
 get '/:host/?' do
     @host = get_host_record params[:host]
     if @host
-        @title = 'Host ' << @host.hostname
+        @title = 'Host View'
         erb :hostview
     else
         host_not_found params[:host]
@@ -55,13 +54,13 @@ post '/:host/?' do
         @host.update( :hostdescription => params[:hostdescription],
                       :lastupdate => Time.now )
         status 200
-        "The host record for " + params[:hostname] + " was succesfully updated."
+        "The host record for " + params[:hostname] + " was successfully updated."
     end
 end
 
 get '/:host/pools/?' do
     @host = get_host_record params[:host]
-    "Host: #{@host.hostname}\nPools: #{@host.pools.length.to_s}"
+    erb :host_poolsview
 end
 
 get '/:host/pools/:pool/?' do
@@ -130,4 +129,8 @@ post '/:host/pools/:pool/?' do
     else
         puts "not saving #{@pool.name}"
     end
+end
+
+get '/:host/mounts/?' do
+    'blah'
 end
