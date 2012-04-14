@@ -110,19 +110,19 @@ class ZFSMount
     # The time this dataset was created
     property :creation,         DateTime, :required => true
 
-    # For volumes, specifies the logical size of the volume.
-    property :volsize,          Integer, :required => true, :min => 0
+    # For volumes, specifies the logical size of the volume. Nil on non-volume filesystems
+    property :volsize,          Integer, :min => 0, :max => 9223372036854775808
 
     # The amount of space consumed by this dataset and all its descendants.
-    property :used,             Integer, :required => true, :min => 0
+    property :used,             Integer, :required => true, :min => 0, :max => 9223372036854775808
 
     # The amount of space available to the dataset and all its 
     # children, assuming that there is no other activity in the pool.
-    property :avail,            Integer, :required => true, :min => 0
+    property :avail,            Integer, :required => true, :min => 0, :max => 9223372036854775808
 
     # The amount of data that is accessible by this dataset, 
     # which may or may not be shared with other datasets in the pool.
-    property :refer,            Integer, :required => true, :min => 0
+    property :refer,            Integer, :required => true, :min => 0, :max => 9223372036854775808
 
     # The  compression  ratio  multiplier  for   this   dataset
     property :ratio,            Float, :default => 1.0
@@ -179,14 +179,14 @@ class ZFSMount
     property :zoned,            Boolean
 
     # Controls whether the .zfs directory is hidden or visible
-    property :snapdir,          Enum[ :hidden, :visible ], :required => true
+    property :snapdir,          Enum[ :hidden, :visible, :na ], :required => true
 
     # Controls how ACL entries are inherited  when  files  and
     # directories are created. See man page for more info.
-    property :aclinherit,       Enum[ :discard, :noallow, :restricted, :passthrough, :passthroughx ], :required => true
+    property :aclinherit,       Enum[ :discard, :noallow, :restricted, :passthrough, :passthroughx, :na ], :required => true
 
     # Controls whether this filesystem can be mounted.
-    property :canmount,         Enum[ :on, :off, :noauto ]
+    property :canmount,         Enum[ :on, :off, :noauto, :na ]
 
     # Controls whether extended  attributes  are  enabled
     property :xattr,            Boolean
@@ -195,7 +195,7 @@ class ZFSMount
     property :copies,           Integer, :min => 1, :max => 3, :required => true, :default => 1
 
     # The on-disk  version  of  this  file  system
-    property :version,          Enum[ :one, :two, :current ]
+    property :version,          Integer, :min => 1
 
     # Indicates whether the file  system  should  reject  file names  
     # that  include  characters that are not present in the UTF-8 character code set.
@@ -203,11 +203,11 @@ class ZFSMount
 
     # Indicates whether  the  file  system  should  perform  a unicode  normalization  of  file names whenever 
     # two file names are compared, and  which  normalization  algorithm should be used.
-    property :normalization,    Enum[ :none, :formC, :formD, :formKC, :formKD]
+    property :normalization,    Enum[ :na, :none, :formC, :formD, :formKC, :formKD]
 
     # Indicates whether the file name matching algorithm  used by  the  file  system  
     # should  be  case-sensitive, case-insensitive, or allow a combination of  both  styles
-    property :case,             Enum[ :sensitive, :insensitive, :mixed ]
+    property :case,             Enum[ :sensitive, :insensitive, :mixed, :na ]
 
     # Controls whether regular files  should  be  scanned  for viruses when a file is opened and closed.
     property :vscan,            Boolean

@@ -23,6 +23,10 @@ def get_pool_record( hostrec, pool )
     hostrec.pools.first_or_create :host => hostrec, :name => pool
 end
 
+def get_fs_record( hostrec, filesystem )
+    hostrec.mounts.first_or_create :host => hostrec, :name => filesystem
+end
+
 def host_not_found( request="" )
     status 404
     "The provided host ID or hostname " + request.to_s + " could not be found in the database."
@@ -33,11 +37,56 @@ def pool_not_found( request="" )
     "The provided pool ID or name " + request.to_s + " could not be found in the database."
 end
 
+$ZPOOL_DESCRIPTIONS = { 'name' =>     'The name of the ZFS pool',
+                        'size' =>     'The total size of the storage pool',
+                        'cap' =>      'Percentage of pool space used.',
+                        'free' =>     'The number of unallocated blocks',
+                        'alloc' =>    'The amount of storage space in the pool that has been physically allocated.',
+                        'altroot' =>  'Alternate root directory.  If set, this directory is prepended to ' +
+                                    'any mount points within the pool.',
+                        'health' =>   'The current health of the pool.',
+                        'guid' =>     'The globally-unique identifier for this pool.',
+                        'version' =>  'The current on-disk version of the pool.',
+                        'bootfs' =>   'Identifies the default bootable dataset for the root pool.',
+                        'delegation' => 'Controls whether a non-privileged user is granted access based on ' +
+                                    'the dataset permissions defined on the dataset.',
+                        'replace' =>  'Controls automatic device replacement. If set to "off", device replacement ' + 
+                                    'must be initiated by the administrator by using the "zpool  replace" command. ' +
+                                    'If set  to "on", any new device found in the same physical location as a device ' +
+                                    'that previously belonged to the pool is automatically formatted and replaced.',
+                        'cachefile' => 'Controls the location of where the pool configuration is cached.',
+                        'failmode' => 'Controls the system behavior in the event of catastrophic pool failure.',
+                        'listsnaps' => 'Controls whether information about snapshots associated with this pool is ' +
+                                    'output when "zfs list" is run without the -t option. The default value is "off".',
+                        'expand' =>   'Controls automatic pool expansion when the underlying LUN is grown. If set to on, ' +
+                                    'the pool will be resized according to the size of the expanded device.',
+                        'dedupditto' => 'The deduplication ratio specified for a pool, expressed as a multiplier.',
+                        'rdonly' =>   'Controls whether the pool can be modified.'
+                    }
+                    
+$ZPOOL_HEALTH = {   'degraded' =>   'One or more top-level vdevs are in the degraded state because one or more component ' +
+                                    'devices are offline. Sufficient replicas exist to continue functioning.',
+                    'faulted' =>    'One or more top-level vdevs are in the faulted state because one or more component ' +
+                                    'devices are offline. Insufficient replicas exist to continue functioning.',
+                    'offline' =>    'The device was explicitly taken offline by the "zpool offline" command.',
+                    'online' =>     'The device is online and functioning.',
+                    'removed' =>    'The device was physically removed while the system was running.',
+                    'unavail' =>    'The device could not be opened.'
+                }
+                        
 $ZFS_ENUM_FIELDS = ['health', 'failmode', 'type', 'checksum', 'compress', 'snapdir',
                     'aclinherit', 'canmount', 'version', 'normalization', 'case',
                     'primarycache', 'secondarycache', 'logbias', 'dedup', 'sync',
                     'crypt', 'keysourceformat', 'keysourcelocation', 'keystatus']
+                    
+$ZFS_STUPID_BOOLEAN_FIELDS = ['setuid', 'sharesmb', 'zoned', 'utf8only', 'xattr', 'atime',
+                              'mounted', 'exec', 'vscan', 'defer_destroy', 'nbmand',
+                              'devices', 'rstchown']
 
+$ZFS_MOUNT_SIZE_FIELDS = ['avail', 'quota', 'recsize', 'refer', 'refquota', 
+                          'refreserv', 'reserv', 'used', 'usedchild', 'usedds', 
+                          'usedrefreserv', 'usedsnap', 'volblock', 'volsize']
+                          
 $ZFS_MOUNT_FIELDS = ['name', 'type', 'creation', 'used', 'avail', 'refer', 'ratio',
                     'mounted', 'origin', 'quota', 'compress', 'atime', 'devices', 
                     'exec', 'setuid', 'rdonly', 'zoned', 'snapdir', 'aclinherit', 
@@ -49,11 +98,9 @@ $ZFS_MOUNT_FIELDS = ['name', 'type', 'creation', 'used', 'avail', 'refer', 'rati
                     'sync', 'crypt', 'keysource', 'keystatus', 'rekeydate', 
                     'rstchown',  'org.opensolaris.caiman:install', 
                     'org.opensolaris.libbe:uuid']
-
-$ZFS_MOUNT_SIZE_FIELDS = ['avail', 'quota', 'recsize', 'refer', 'refquota', 
-                          'refreserv', 'reserv', 'used', 'usedchild', 'usedds', 
-                          'usedrefreserv', 'usedsnap', 'volblock', 'volsize']
+                          
 $ZFS_POOL_SIZE_FIELDS = ['size', 'free', 'alloc']
+
 $ZFS_POOL_FIELDS = ['name', 'size', 'cap', 'altroot', 'health', 'guid', 
                       'version', 'bootfs', 'delegation', 'replace', 'cachefile', 
                       'failmode', 'listsnaps', 'expand', 'dedupditto', 'dedup', 

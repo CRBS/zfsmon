@@ -6,6 +6,7 @@
 <div class="row">
     <div class="span6">
         <p><%= @host.hostdescription %></p>
+        <p><strong>Last update:</strong> <%= @host.lastupdate.strftime format='%A, %B %d, %Y at %l:%M %P ' %></p>
     </div>
 </div>
 
@@ -20,20 +21,48 @@
 <div class="row">
 <% @host.pools.each_with_index do |pool, index| %>
     <div class="span3 well">
-        <h4><a href="/<%= @host.hostname %>/pools/<%= pool.name %>"><%= pool.name %></a></h4>
-        <p><%= pool.alloc / (1000 * 1000 * 1000) %> GB used</p>
-        <p><%= pool.free / (1000 * 1000 * 1000) %> GB free</p>
-        <p><%= (pool.alloc + pool.free) / (1000 * 1000 * 1000) %> GB total</p>
-        <p><strong>Health:</strong> 
-            <% if pool.health.to_s.eql? 'online' then %>
-                <span class="label label-success">
-            <% else %>
-                <span class="label label-warning">
+        <h4 title="<%= $ZPOOL_DESCRIPTIONS['name'] %>"><a href="/<%= @host.hostname %>/pools/<%= pool.name %>"><%= pool.name %></a></h4>
+        <p title="<%= $ZPOOL_DESCRIPTIONS['free'] %>"><%= pool.free / (1000 ** 3) %> GB free</p>
+        <p title="<%= $ZPOOL_DESCRIPTIONS['alloc'] %>"><%= pool.alloc / (1000 ** 3) %> GB used</p>
+        <p title="<%= $ZPOOL_DESCRIPTIONS['size'] %>"><%= pool.size / (1000 ** 3) %> GB total</p>
+        <p title="<%= $ZPOOL_HEALTH[pool.health.to_s] %>"><strong>Health:</strong> 
+            <% case pool.health.to_s; when 'online' then %>
+                    <span class="label label-success">
+                <% when 'degraded' then %>
+                    <span class="label label-warning">
+                <% when 'faulted', 'removed', 'unavail' then %>
+                    <span class="label label-important">
+                <% when 'offline' then %>
+                    <span class="label label-inverse">
             <% end %>
             <%= pool.health %>
         </span></p>
+
     </div>
-    <% if (index % 4 == 0) && (index > 0) %>
+    <% if (index+1) % 3 == 0 %>
+        </div><div class="row">
+    <% end %>
+<% end %>
+</div>
+<div class="row">
+    <div class="span4">
+        <h3><a href="/<%= @host.hostname %>/mounts"><%= @host.mounts.count %> Filesystems</a></h3>
+        &nbsp;
+    </div>
+</div>
+<div class="row">
+<% @host.mounts.each_with_index do |mount, index| %>
+    <div class="span3 well">
+        <h4><a href="<%= @host.hostname << '/' << mount.name %>"><%= mount.name %></a></h4>
+        <p><%= mount.type %></p>
+        <p><strong>Referenced: </strong><%= mount.refer / 1000 ** 3 %> GB</p>
+        <p><strong>Mounted: </strong>
+            <span class="label <%= mount.mounted ? 'label-success' : 'label-warning' %>">
+            <%= mount.mounted ? 'yes' : 'no' %>
+            </span>
+        </p>
+    </div>
+    <% if (index+1) % 3 == 0 %>
         </div><div class="row">
     <% end %>
 <% end %>
