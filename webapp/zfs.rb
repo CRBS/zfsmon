@@ -71,7 +71,7 @@ get '/:host/pools/:pool/?' do
         status 404
         "The requested pool could not be found on " + params[:hostname] + "."
     end
-    erb :poolview
+    erb :pooldetail
 end
 
 post '/:host/pools/:pool/?' do
@@ -108,7 +108,7 @@ post '/:host/pools/:pool/?' do
 
             # Cap is a percentage for some reason
             if k == 'cap'
-                v = v[0..-1].to_i / 100
+                v = v[0..-1].to_i / 100.0
             end
 
             # Dedup is a float but ZFS puts an 'x' on the end
@@ -132,6 +132,15 @@ get '/:host/mounts/?' do
         host_not_found params[:host]
     end
     erb :host_fsview
+end
+
+get '/:host/mounts/:mount/?' do
+    @host = get_host_record params[:host]
+    if not @host
+        host_not_found params[:host]
+    end
+    @mount = get_fs_record @host, params[:mount]
+    erb :fsdetail
 end
 
 post '/:host/mounts/:mount/?' do
