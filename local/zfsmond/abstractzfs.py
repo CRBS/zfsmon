@@ -15,7 +15,8 @@ class AbstractZFS(object):
 
     def __init__(self, properties):
         self.properties = self.property_parse(properties)
-        self.name = quote( self.properties['name'].replace('/', '-') )
+        self.properties['name'] = self.properties['name'].replace('/', '-')
+        self.name = quote( self.properties['name'] )
 
     def __str__(self):
         return self.name + " " + str(self.properties)

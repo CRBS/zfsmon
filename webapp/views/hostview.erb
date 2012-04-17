@@ -53,11 +53,11 @@
 <div class="row">
 <% @host.mounts.each_with_index do |mount, index| %>
     <div class="span3 well">
-        <h4><a href="<%= @host.hostname << '/' << mount.name %>"><%= mount.name %></a></h4>
+        <h4><a href="<%= @host.hostname + '/mounts/' + mount.name %>"><%= mount.name %></a></h4>
         <p><%= mount.type %></p>
         <p><strong>Referenced: </strong><%= mount.refer / 1000 ** 3 %> GB</p>
         <p><strong>Mounted: </strong>
-            <span class="label <%= mount.mounted ? 'label-success' : 'label-warning' %>">
+            <span class="label <%= mount.mounted ? 'label-info' : 'label-warning' %>">
             <%= mount.mounted ? 'yes' : 'no' %>
             </span>
         </p>

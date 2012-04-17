@@ -12,10 +12,11 @@ import tempfile
 import socket
 import time
 import ConfigParser as configparser
+from urllib2 import quote
 
 from zfsmond.zpool import ZPool
 from zfsmond.zmount import ZMount
-ZFSMON_SERVER = "http://" + "169.228.147.132:4567"
+ZFSMON_SERVER = "http://" + "127.0.0.1:4567"
 HOSTNAME = socket.gethostname()
 
 def main():
@@ -76,7 +77,16 @@ def main():
     
     # Poll for the updated information we want to send
     pools = get_pools()
+    for pool in pools:
+        # Clean up names to be URL-safe because this doesn't work in AbstractZFS' constructor
+        # for some reason
+        pool.properties['name'] = quote(pool.properties['name'].replace('/', '-'))
+        
     mounts = get_mounts()
+    for mount in mounts:
+        mount.properties['name'] = quote(mount.properties['name'].replace('/', '-'))
+        mount.name = mount.properties['name']
+    
     # Do the updates once we're sure that this host exists
     try:
         if not post_update(pools, HOSTNAME, ZFSMON_SERVER):
@@ -105,7 +115,6 @@ def post_update(zfsobjs, hostname=HOSTNAME, server=ZFSMON_SERVER):
         elif isinstance(obj, ZMount):
             rescollection = "mounts"
         else: raise TypeError("Can't post a non-AbstractZFS object to the web service.")
-
         postreq = requests.post( server + "/" + hostname + "/" + rescollection + "/" + obj.name,
                                  data=obj.properties )
         if postreq.status_code / 100 != 2:

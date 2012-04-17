@@ -93,6 +93,10 @@ post '/:host/pools/:pool/?' do
             if $ZFS_ENUM_FIELDS.include? k
                 v = v.downcase
             end
+            
+            if k == 'name'
+                v.gsub! '/', '-'
+            end
 
             # ZFS returns 'on' and 'off' for certain fields but DM expects
             # boolean values.
@@ -169,6 +173,10 @@ post '/:host/mounts/:mount/?' do
             
             if k == 'mounted'
                 v = (v == 'yes') ? true : false
+            end
+            
+            if k == 'name'
+                v.gsub! '/', '-'
             end
             
             if ['canmount', 'snapdir', 'case', 'aclinherit', 'normalization'].include? k and v == '-'
