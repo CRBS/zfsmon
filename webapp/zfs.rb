@@ -81,7 +81,6 @@ post '/:host/pools/:pool/?' do
     end
 
     @pool = get_pool_record @host, params[:pool]
-
     request.POST.each do |k, v|
         if not $ZFS_POOL_FIELDS.include? k
             next
@@ -108,7 +107,7 @@ post '/:host/pools/:pool/?' do
 
             # Cap is a percentage for some reason
             if k == 'cap'
-                v = v[0..-1].to_i / 100.0
+                v = v[0..-1].to_i
             end
 
             # Dedup is a float but ZFS puts an 'x' on the end

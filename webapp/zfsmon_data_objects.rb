@@ -32,7 +32,7 @@ class ZFSPool
 
     # Each pool must specify its capacity, free space, and allocated space in bytes
     property :size,             Integer, :required => true, :min => 0, :max => 9223372036854775808, :default => 0
-    property :cap,              Decimal, :required => true, :min => 0.0, :max => 1.0, :default => 1.0
+    property :cap,              Integer, :required => true, :min => 0, :max => 100, :default => 0
     property :free,             Integer, :required => true, :min => 0, :max => 9223372036854775808, :default => 0
     property :alloc,            Integer, :required => true, :min => 0, :max => 9223372036854775808, :default => 0
     

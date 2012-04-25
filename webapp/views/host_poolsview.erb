@@ -19,11 +19,11 @@ td {
 <% @host.pools.each_with_index do |pool, index| %>
     <div class="row">
         <div class="span8">
-            <h4><a href="/<%= @host.hostname << '/' << pool.name %>"><%= pool.name %></a></h4>
+            <h4><a href="/<%= "#{@host.hostname}/pools/#{pool.name}" %>"><%= pool.name %></a></h4>
             <table class="table-striped">
                 <tr><td><strong>Free: </strong></td><td><%= pool.free / 1000 ** 3 %> GB</td></tr>
                 <tr><td><strong>Used: </strong></td><td><%= pool.alloc / 1000 ** 3 %> GB</td></tr>
-                <tr><td><strong>Size: </strong></td><td><%= pool.size / 1000 ** 3 %> GB</td></tr>
+                <tr><td><strong>Capacity: </strong></td><td><%= pool.size / 1000 ** 3 %> GB</td></tr>
                 <tr><td title="<%= $ZPOOL_HEALTH[pool.health.to_s] %>"><strong>Health:</strong></td>
                     <td title="<%= $ZPOOL_HEALTH[pool.health.to_s] %>">
                         <% case pool.health.to_s; when 'online' then %>
@@ -41,7 +41,7 @@ td {
                 <tr><td><strong>Version: </strong></td><td><%= pool.version %></td></tr>
                 <tr><td><strong>Delegation: </strong></td><td><%= pool.delegation ? 'on' : 'off' %></td></tr>
                 <tr><td><strong>AutoReplace: </strong></td><td><%= pool.replace ? 'on' : 'off' %></td></tr>
-                <tr><td><strong>Failure Mode:</strong></td><td><%= pool.failmode %></td></tr>
+                <tr><td><strong>Failure Mode: </strong></td><td><%= pool.failmode %></td></tr>
             </table>
             &nbsp;
         </div>

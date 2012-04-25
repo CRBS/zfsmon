@@ -1,41 +1,4 @@
-# Extra methods for parsing and data transformation
-
-class String
-    def is_int?
-        Integer(self, 10)
-        rescue ArgumentError
-            false
-        else
-            true
-    end
-end
-
-def get_host_record( hostget )
-    if hostget.is_int?
-        @host = ZFSHost.get hostget.to_i
-    else
-        @host = ZFSHost.first :hostname => hostget
-    end
-    return @host
-end
-
-def get_pool_record( hostrec, pool )
-    hostrec.pools.first_or_create :host => hostrec, :name => pool
-end
-
-def get_fs_record( hostrec, filesystem )
-    hostrec.mounts.first_or_create :host => hostrec, :name => filesystem
-end
-
-def host_not_found( request="" )
-    status 404
-    "The provided host ID or hostname " + request.to_s + " could not be found in the database."
-end
-
-def pool_not_found( request="" )
-    status 404
-    "The provided pool ID or name " + request.to_s + " could not be found in the database."
-end
+# Extra methods for parsing and data transformation and hashes for other things
 
 $ZPOOL_DESCRIPTIONS = { 'name' =>     'The name of the ZFS pool',
                         'size' =>     'The total size of the storage pool',
@@ -105,3 +68,53 @@ $ZFS_POOL_FIELDS = ['name', 'size', 'cap', 'altroot', 'health', 'guid',
                       'version', 'bootfs', 'delegation', 'replace', 'cachefile', 
                       'failmode', 'listsnaps', 'expand', 'dedupditto', 'dedup', 
                       'free', 'alloc', 'rdonly']
+
+class String
+    def is_int?
+        Integer(self, 10)
+        rescue ArgumentError
+            false
+        else
+            true
+    end
+end
+
+def get_host_record( hostget )
+    if hostget.is_int?
+        @host = ZFSHost.get hostget.to_i
+    else
+        @host = ZFSHost.first :hostname => hostget
+    end
+    return @host
+end
+
+def get_pool_record( hostrec, pool )
+    hostrec.pools.first_or_create :host => hostrec, :name => pool
+end
+
+def get_fs_record( hostrec, filesystem )
+    hostrec.mounts.first_or_create :host => hostrec, :name => filesystem
+end
+
+def get_desc( datatype, field )
+    if datatype == :pool then
+        r = $ZPOOL_DESCRIPTIONS[field]
+    elsif datatype == :fs then
+        r = $ZFS_DESCRIPTIONS[field]
+    end
+    unless r
+        r = 'Description not found'
+    end
+    return r
+end
+    
+def host_not_found( request="" )
+    status 404
+    "The provided host ID or hostname " + request.to_s + " could not be found in the database."
+end
+
+def pool_not_found( request="" )
+    status 404
+    "The provided pool ID or name " + request.to_s + " could not be found in the database."
+end
+
