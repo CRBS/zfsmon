@@ -1,6 +1,6 @@
 <div class="row">
     <div class="span6">
-        <h3><%= "#{@host.hostname}/pools/#{@pool.name}" %></h3>
+        <h3><%= build_breadcrumb_string [@host.hostname, "pools", @pool.name] %></h3>
     </div>
 </div>
 <div class="row">
@@ -18,8 +18,8 @@ td {
 </style>
 <div class="row">
     <div class="span8">
-        <h4><a href="/<%= "#{@host.hostname}/pools/#{@pool.name}" %>"><%= @pool.name %></a></h4>
-        <p><strong>Storage</strong></p>
+        <h2><a href="/<%= "#{@host.hostname}/pools/#{@pool.name}" %>"><%= @pool.name %></a></h2>
+        <h3>Storage</h3>
         <table class="table-striped">
             <tr title="<%= get_desc :pool, 'free' %>"><td><strong>Free: </strong></td><td><%= @pool.free / 1000 ** 3 %> GB</td></tr>
             <tr title="<%= get_desc :pool, 'alloc' %>"><td><strong>Used: </strong></td><td><%= @pool.alloc / 1000 ** 3 %> GB</td></tr>
@@ -40,7 +40,7 @@ td {
                 </span></td>
             </tr>
         </table>&nbsp;
-        <p><strong>Properties</strong></p>
+        <h3>Properties</h3>
         <table class="table-striped">
             <tr title="<%= get_desc :pool, 'altroot' %>"><td><strong>Alt Root: </strong></td><td><%= @pool.altroot %></td></tr>
             <tr title="<%= get_desc :pool, 'expand' %>"><td><strong>Auto Expand: </strong></td>
@@ -62,6 +62,11 @@ td {
                                                             <td><%= @pool.rdonly ? 'yes' : 'no' %></td></tr>
             <tr title="<%= get_desc :pool, 'version' %>"><td><strong>Version: </strong></td><td><%= @pool.version %></td></tr>
         </table>
+    </div>
+</div>
+<div class="row">
+    <div class="span8">
+        &nbsp;
     </div>
 </div>
             

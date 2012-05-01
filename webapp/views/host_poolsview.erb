@@ -1,6 +1,6 @@
 <div class="row">
     <div class="span6">
-        <h3><%= @host.hostname %>/pools</h3>
+        <h3><%= build_breadcrumb_string [@host.hostname, 'pools'] %></h3>
     </div>
 </div>
 <div class="row">
@@ -19,7 +19,7 @@ td {
 <% @host.pools.each_with_index do |pool, index| %>
     <div class="row">
         <div class="span8">
-            <h4><a href="/<%= "#{@host.hostname}/pools/#{pool.name}" %>"><%= pool.name %></a></h4>
+            <h3><a href="/<%= "#{@host.hostname}/pools/#{pool.name}" %>"><%= pool.name %></a></h3>
             <table class="table-striped">
                 <tr><td><strong>Free: </strong></td><td><%= pool.free / 1000 ** 3 %> GB</td></tr>
                 <tr><td><strong>Used: </strong></td><td><%= pool.alloc / 1000 ** 3 %> GB</td></tr>

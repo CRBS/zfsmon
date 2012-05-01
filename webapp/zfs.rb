@@ -58,6 +58,7 @@ end
 
 get '/:host/pools/?' do
     @host = get_host_record params[:host]
+    @title = "All pools on #{@host.hostname}"
     erb :host_poolsview
 end
 
@@ -71,6 +72,7 @@ get '/:host/pools/:pool/?' do
         status 404
         "The requested pool could not be found on " + params[:hostname] + "."
     end
+    @title = "Details for #{@pool.name}"
     erb :pooldetail
 end
 
@@ -130,6 +132,7 @@ get '/:host/mounts/?' do
     if not @host
         host_not_found params[:host]
     end
+    @title = "All mounts on #{@host.hostname}"
     erb :host_fsview
 end
 
@@ -139,6 +142,7 @@ get '/:host/mounts/:mount/?' do
         host_not_found params[:host]
     end
     @mount = get_fs_record @host, params[:mount]
+    @title = "Details for #{@mount.name}"
     erb :fsdetail
 end
 

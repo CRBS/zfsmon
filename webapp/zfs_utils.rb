@@ -23,7 +23,9 @@ $ZPOOL_DESCRIPTIONS = { 'name' =>     'The name of the ZFS pool',
                                     'output when "zfs list" is run without the -t option. The default value is "off".',
                         'expand' =>   'Controls automatic pool expansion when the underlying LUN is grown. If set to on, ' +
                                     'the pool will be resized according to the size of the expanded device.',
-                        'dedupditto' => 'The deduplication ratio specified for a pool, expressed as a multiplier.',
+                        'dedup' => 'The deduplication ratio specified for a pool, expressed as a multiplier.',
+                        'dedupditto' => 'Sets a threshold for number of copies. If the reference count for a deduplicated ' +
+                                        'block goes above this threshold, another ditto copy of the block is stored automatically.',
                         'rdonly' =>   'Controls whether the pool can be modified.'
                     }
                     
@@ -117,4 +119,27 @@ def pool_not_found( request="" )
     status 404
     "The provided pool ID or name " + request.to_s + " could not be found in the database."
 end
+
+def build_breadcrumb_string( elements )
+    return "<a href=\"/#{elements[0]}\">#{elements[0]}</a>" if elements.size == 1
+    uripaths = Array.new
+    
+    # Build the relative URIs for each breadcrumb
+    elements.each_with_index do |element, i|
+        if i == 0 then uripaths[0] = "/#{element}" 
+        else uripaths[i] = uripaths[i-1] + "/#{element}"
+        end
+    end
+    
+    # Then concatenate them into a string
+    tags = ""
+    uripaths.each_with_index do |path, i|
+        tags << "<a href=\"#{path}\">#{elements[i]}</a>"
+        tags << ' / ' unless i == (uripaths.size - 1)
+    end
+    return tags
+end
+        
+    
+    
 
