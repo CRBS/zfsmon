@@ -1,0 +1,25 @@
+<div class="row">
+    <div class="span6">
+        <h3><%= build_breadcrumb_string [@host.hostname, 'datasets', @ds.name] %></h3>
+    </div>
+</div>
+<div class="row">
+    <div class="span6">
+        <p><%= @host.hostdescription %></p>
+        <p><strong>Last update:</strong> <%= @host.lastupdate.strftime format='%A, %B %d, %Y at %l:%M %P ' %></p>
+    </div>
+</div>
+
+<hr />
+<style type="text/css">
+td {
+    padding-right: 15px;
+}
+</style>
+
+<div class="row">
+    <div class="span8">
+        <h2><a href="/<%= "#{@host.hostname}/datasets/#{@ds.name}" %>"><%= @ds.name %></a></h2>
+        <h3>Storage</h3>
+        <table class="table-striped">
+            <tr title="<%= get_desc :fs, 
