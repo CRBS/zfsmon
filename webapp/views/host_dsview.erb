@@ -1,6 +1,6 @@
 <div class="row">
     <div class="span6">
-        <h3><%= build_breadcrumb_string [@host.hostname, 'datasets'] %></h3>
+        <h3><%= ZUtil.build_breadcrumb_string [@host.hostname, 'datasets'] %></h3>
     </div>
 </div>
 <div class="row">
@@ -22,10 +22,17 @@ td {
         <div class="span8">
             <h3><a href="/<%= @host.hostname + '/datasets/' + ds.name %>"><%= ds.name %></a></h3>
             <table class="table-striped">
-                <tr><td><strong>Type: </strong></td><td><%= ds.type %></td></tr>
-                <tr><td><strong>Available on dataset: </strong></td><td><%= ds.avail / 1000 ** 3 %> GB</td></tr>
-                <tr><td><strong>Referenced: </strong></td><td><%= ds.refer / 1000 ** 3 %> GB</td></tr>
-                <tr><td><strong>Mounted: </strong></td><td><%= ds.mounted ? 'yes' : 'no' %></td></tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'type' %>"><td><strong>Type: </strong></td><td><%= ds.type %></td></tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'avail' %>"><td><strong>Available to dataset: </strong></td><td><%= ZUtil.convert_human_bytes ds.avail %></td></tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'refer' %>"><td><strong>Referenced: </strong></td><td><%= ZUtil.convert_human_bytes ds.refer %></td></tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'used' %>"><td><strong>Used:</strong></td><td><%= ZUtil.convert_human_bytes ds.used %></td></tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'mounted' %>">
+                    <td><strong>Mounted: </strong></td>
+                    <td><span class="label <%= ds.mounted ? 'label-info' : '' %>"><%= ds.mounted ? 'yes' : 'no' %></span></td>
+                </tr>
+                <% if ds.mounted %>
+                    <tr title="<%= ZUtil.get_desc :ds, 'mountpoint' %>"><td><strong>Mount Point: </strong></td><td><code><%= ds.mountpoint %></code></td></tr>
+                <% end %>
             </table>
             &nbsp;
         </div>

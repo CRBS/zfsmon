@@ -14,6 +14,18 @@ configure do
     enable :static
 end
 
+helpers ZUtil
+
+helpers do
+    def host_not_found( request="" )
+        status 404
+        "The provided host ID or hostname " + request.to_s + " could not be found in the database."
+    end
+    def pool_not_found( request="" )
+        status 404
+        "The provided pool ID or name " + request.to_s + " could not be found in the database."
+    end
+end
 get '/' do
     @allhosts = ZFSHost.all :order => [ :hostname.asc ]
     @title = 'All Hosts'
@@ -23,7 +35,7 @@ end
 
 # Host-level operations
 get '/:host/?' do
-    @host = get_host_record params[:host]
+    @host = ZUtil.get_host_record params[:host]
     if @host
         @title = 'Host View'
         erb :hostview
@@ -33,7 +45,7 @@ get '/:host/?' do
 end
 
 post '/:host/?' do
-    @host = get_host_record params[:host]
+    @host = ZUtil.get_host_record params[:host]
     if not @host
         z = ZFSHost.create( :hostname => params[:hostname],
                             :hostdescription => params[:hostdescription],
@@ -57,17 +69,17 @@ post '/:host/?' do
 end
 
 get '/:host/pools/?' do
-    @host = get_host_record params[:host]
+    @host = ZUtil.get_host_record params[:host]
     @title = "All pools on #{@host.hostname}"
     erb :host_poolsview
 end
 
 get '/:host/pools/:pool/?' do
-    @host = get_host_record params[:host]
+    @host = ZUtil.get_host_record params[:host]
     if not @host
         host_not_found params[:host]
     end
-    @pool = get_pool_record @host, params[:pool]
+    @pool = ZUtil.get_pool_record @host, params[:pool]
     if not @pool
         status 404
         "The requested pool could not be found on " + params[:hostname] + "."
@@ -77,21 +89,21 @@ get '/:host/pools/:pool/?' do
 end
 
 post '/:host/pools/:pool/?' do
-    @host = get_host_record params[:host]
+    @host = ZUtil.get_host_record params[:host]
     if not @host
         host_not_found params[:host]
     end
 
-    @pool = get_pool_record @host, params[:pool]
+    @pool = ZUtil.get_pool_record @host, params[:pool]
     request.POST.each do |k, v|
-        if not $ZFS_POOL_FIELDS.include? k
+        if not ZUtil::ZFS_POOL_FIELDS.include? k
             next
         else
-            if $ZFS_POOL_SIZE_FIELDS.include? k
+            if ZUtil::ZFS_POOL_SIZE_FIELDS.include? k
                 v = v.to_i
             end
             
-            if $ZFS_ENUM_FIELDS.include? k
+            if ZUtil::ZFS_ENUM_FIELDS.include? k
                 v = v.downcase
             end
             
@@ -125,44 +137,50 @@ post '/:host/pools/:pool/?' do
         @pool.attributes :lastupdate => Time.now
         @pool.save
     end
+    if not @pool.saved? then
+        puts "------- error saving #{@pool.name} -------"
+        @pool.errors.each do |e|
+            puts e.to_s
+        end
+    end
 end
 
-get '/:host/mounts/?' do
-    @host = get_host_record params[:host]
+get '/:host/datasets/?' do
+    @host = ZUtil.get_host_record params[:host]
     if not @host
         host_not_found params[:host]
     end
-    @title = "All mounts on #{@host.hostname}"
-    erb :host_fsview
+    @title = "All datasets on #{@host.hostname}"
+    erb :host_dsview
 end
 
-get '/:host/mounts/:mount/?' do
-    @host = get_host_record params[:host]
+get '/:host/datasets/:ds/?' do
+    @host = ZUtil.get_host_record params[:host]
     if not @host
         host_not_found params[:host]
     end
-    @mount = get_fs_record @host, params[:mount]
-    @title = "Details for #{@mount.name}"
-    erb :fsdetail
+    @ds = ZUtil.get_ds_record @host, params[:ds]
+    @title = "Details for #{@ds.name}"
+    erb :dsdetail
 end
 
-post '/:host/mounts/:mount/?' do
-    @host = get_host_record params[:host]
+post '/:host/datasets/:ds/?' do
+    @host = ZUtil.get_host_record params[:host]
     if not @host
         host_not_found params[:host]
     end
     
-    @mount = get_fs_record @host, params[:mount]
+    @ds = ZUtil.get_ds_record @host, params[:ds]
     
     request.POST.each do |k, v|
-        if not $ZFS_MOUNT_FIELDS.include? k
+        if not ZUtil::ZFS_DATASET_FIELDS.include? k
             next
         else
-            if $ZFS_MOUNT_SIZE_FIELDS.include? k
+            if ZUtil::ZFS_DATASET_SIZE_FIELDS.include? k
                 v = v.to_i
             end
             
-            if $ZFS_ENUM_FIELDS.include? k
+            if ZUtil::ZFS_ENUM_FIELDS.include? k
                 v = v.downcase
             end
             
@@ -179,7 +197,7 @@ post '/:host/mounts/:mount/?' do
             
             # Some fields say that they are 'on' or 'off' in the docs but inexplicably
             # print a '-' instead of off
-            if $ZFS_STUPID_BOOLEAN_FIELDS.include? k and v == '-'
+            if ZUtil::ZFS_STUPID_BOOLEAN_FIELDS.include? k and v == '-'
                     v = false
             end
             
@@ -189,6 +207,10 @@ post '/:host/mounts/:mount/?' do
             
             if k == 'name'
                 v.gsub! '/', '-'
+            end
+            
+            if k == 'checksum' and v == 'on'
+                v = 'auto'
             end
             
             if ['canmount', 'snapdir', 'case', 'aclinherit', 'normalization'].include? k and v == '-'
@@ -204,13 +226,20 @@ post '/:host/mounts/:mount/?' do
             if k == 'ratio'
                 v = v[0..-1].to_f
             end
-            @mount.attribute_set k.to_sym, v
+            @ds.attribute_set k.to_sym, v
         end
     end
-    @mount.attribute_set :host, @host
-    if @mount.dirty?
+    @ds.attribute_set :host, @host
+    if @ds.dirty?
         @host.update :lastupdate => Time.now
-        @mount.attributes :lastupdate => Time.now
-        @mount.save
+        @ds.attributes :lastupdate => Time.now
+        @ds.save
+    end
+    if not @ds.saved? then
+        puts "------- error saving #{@ds.name} -------"
+        puts "Checksum is #{@ds.checksum}"
+        @ds.errors.each do |e|
+            puts e.to_s
+        end
     end
 end

@@ -1,6 +1,6 @@
 <div class="row">
     <div class="span6">
-        <h3><%= build_breadcrumb_string [@host.hostname, 'pools'] %></h3>
+        <h3><%= ZUtil.build_breadcrumb_string [@host.hostname, 'pools'] %></h3>
     </div>
 </div>
 <div class="row">
@@ -21,11 +21,19 @@ td {
         <div class="span8">
             <h3><a href="/<%= "#{@host.hostname}/pools/#{pool.name}" %>"><%= pool.name %></a></h3>
             <table class="table-striped">
-                <tr><td><strong>Free: </strong></td><td><%= pool.free / 1000 ** 3 %> GB</td></tr>
-                <tr><td><strong>Used: </strong></td><td><%= pool.alloc / 1000 ** 3 %> GB</td></tr>
-                <tr><td><strong>Capacity: </strong></td><td><%= pool.size / 1000 ** 3 %> GB</td></tr>
-                <tr><td title="<%= $ZPOOL_HEALTH[pool.health.to_s] %>"><strong>Health:</strong></td>
-                    <td title="<%= $ZPOOL_HEALTH[pool.health.to_s] %>">
+                <tr><td><strong>Free: </strong></td><td><%= ZUtil.convert_human_bytes pool.free  %></td></tr>
+                <tr><td><strong>Used: </strong></td><td><%= ZUtil.convert_human_bytes pool.alloc %></td></tr>
+                <tr><td><strong>Capacity: </strong></td><td><%= ZUtil.convert_human_bytes pool.size %></td></tr>
+                <tr title="<%= ZUtil.get_desc :pool, 'cap' %>">
+                    <td><strong>Percent Full: </strong></td>
+                    <td>
+                        <span class="label <%= (pool.cap > 90) ? 'label-important' : (pool.cap > 75) ? 'label-warning' : 'label-success' %>">
+                            <%= pool.cap %> %
+                        </span>
+                    </td>
+                </tr>
+                <tr><td title="<%= ZUtil::ZPOOL_HEALTH[pool.health.to_s] %>"><strong>Health:</strong></td>
+                    <td title="<%= ZUtil::ZPOOL_HEALTH[pool.health.to_s] %>">
                         <% case pool.health.to_s; when 'online' then %>
                             <span class="label label-success">
                         <% when 'degraded' then %>

@@ -1,6 +1,6 @@
 <div class="row">
     <div class="span6">
-        <h3><%= build_breadcrumb_string [@host.hostname, 'datasets', @ds.name] %></h3>
+        <h3><%= ZUtil.build_breadcrumb_string [@host.hostname, 'datasets', @ds.name] %></h3>
     </div>
 </div>
 <div class="row">
@@ -14,6 +14,7 @@
 <style type="text/css">
 td {
     padding-right: 15px;
+    padding-bottom: 2px;
 }
 </style>
 
@@ -22,4 +23,166 @@ td {
         <h2><a href="/<%= "#{@host.hostname}/datasets/#{@ds.name}" %>"><%= @ds.name %></a></h2>
         <h3>Storage</h3>
         <table class="table-striped">
-            <tr title="<%= get_desc :fs, 
+            <tr title="<%= ZUtil.get_desc :ds, 'type' %>"><td><strong>Type:</strong></td><td><%= @ds.type %></td></tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'creation' %>">
+                <td><strong>Creation Date:</strong></td>
+                <td><%= @ds.creation.strftime format='%A, %B %d, %Y at %l:%M %P' %></td>
+            </tr>
+            <% if @ds.is_vol? and @ds.volsize %>
+                <tr>
+                    <td title="<%= ZUtil.get_desc :ds, 'volsize' %>"><strong>Volume Size:</strong></td>
+                    <td title="<%= "#{@ds.volsize} bytes" %>"><%= ZUtil.convert_human_bytes @ds.volsize %></td>
+                </tr>
+            <% end %>
+            <tr>
+                <td title="<%= ZUtil.get_desc :ds, 'used' %>"><strong>Used:</strong></td>
+                <td title="<%= "#{@ds.used} bytes" %>"><%= ZUtil.convert_human_bytes @ds.used %></td>
+            </tr>
+            <tr>
+                <td title="<%= ZUtil.get_desc :ds, 'avail' %>"><strong>Available:</strong></td>
+                <td title="<%= "#{@ds.used} bytes" %>"><%= ZUtil.convert_human_bytes @ds.avail %></td>
+            </tr>
+            <tr>
+                <td title="<%= ZUtil.get_desc :ds, 'refer' %>"><strong>Referenced by dataset:</strong></td>
+                <td title="<%= "#{@ds.refer} bytes" %>"><%= ZUtil.convert_human_bytes @ds.refer %></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'ratio' %>">
+                <td><strong>Compression ratio:</strong></td>
+                <td><%= @ds.ratio %></td>
+            </tr>
+        </table>&nbsp;
+        <h3>Properties</h3>
+        <table class="table-striped sortable">
+            <tr><th>Property</th><th>Value</th></tr>
+            <% if @ds.quota and @ds.quota > 0 then %>
+                <tr title="<%= ZUtil.get_desc :ds, 'quota' %>"><td><strong>Quota:</strong></td><td><%= @ds.quota %></td></tr>
+            <% end %>
+            
+            <!-- Filesystem-only properties -->
+            <% if @ds.is_fs? %>
+                <tr title="<%= ZUtil.get_desc :ds, 'mounted' %>">
+                    <td><strong>Mounted?</strong></td>
+                    <td><span class="label <%= @ds.mounted ? 'label-info' : '' %>"><%= @ds.mounted ? 'yes' : 'no' %></span></td>
+                </tr>
+                <% if @ds.is_mounted? %>
+                    <tr title="<%= ZUtil.get_desc :ds, 'mountpoint' %>">
+                        <td><strong>Mount Point:</strong></td>
+                        <td><code><%= @ds.mountpoint %></code></td>
+                    </tr>
+                <% end %>
+                <% if @ds.recsize %>
+                <tr title="<%= ZUtil.get_desc :ds, 'recsize' %>">
+                    <td><strong>Suggested Block Size:</strong></td>
+                    <td><%= ZUtil.convert_human_bytes @ds.recsize %></td>
+                </tr>
+                <% end %>
+                <tr title="<%= ZUtil.get_desc :ds, 'sharenfs' %>">
+                    <td><strong>Shared via NFS?</strong></td>
+                    <td><span class="label <%= @ds.sharenfs ? 'label-info' : '' %>"><%= @ds.sharenfs ? 'yes' : 'no' %></span></td>
+                </tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'devices' %>">
+                    <td><strong>Device mknod enabled?</strong></td>
+                    <td><span class="label <%= @ds.devices ? 'label-info' : '' %>"><%= @ds.devices ? 'yes' : 'no' %></span></td>
+                </tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'exec' %>">
+                    <td><strong>Process execution enabled?</strong></td>
+                    <td><span class="label <%= @ds.exec ? 'label-info' : '' %>"><%= @ds.exec ? 'yes' : 'no' %></span></td>
+                </tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'setuid' %>">
+                    <td><strong>Respect setUID bit?</strong></td>
+                    <td><span class="label <%= @ds.setuid ? 'label-info' : '' %>"><%= @ds.setuid ? 'yes' : 'no' %></span></td>
+                </tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'canmount' %>">
+                    <td><strong>Mountable?</strong></td>
+                    <td><span class="label <%= @ds.canmount ? 'label-info' : '' %>"><%= @ds.canmount ? 'yes' : 'no' %></span></td>
+                </tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'version' %>">
+                    <td><strong>Version:</strong></td>
+                    <td><span class="badge badge-inverse"><%= @ds.version %></span></td>
+                </tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'utf8only' %>">
+                    <td><strong>UTF-8 only?</strong></td>
+                    <td><span class="label <%= @ds.utf8only ? 'label-info' : '' %>"><%= @ds.utf8only ? 'yes' : 'no' %></span></td>
+                </tr>
+                <% unless @ds.normalization == :na %>
+                    <tr title="<%= ZUtil.get_desc :ds, 'normalization' %>">
+                        <td><strong>Unicode normalization:</strong></td>
+                        <td><span class="label <%= (@ds.normalization == :none) ? '' : 'label-info' %>"><%= @ds.normalization %></span></td>
+                    </tr>
+                <% end %>
+                <% unless @ds.case == :na %>
+                    <tr title="<%= ZUtil.get_desc :ds, 'case' %>">
+                        <td><strong>Case sensitivity:</strong></td>
+                        <td><span class="label <%= (@ds.case == :sensitive) ? 'label-info' : '' %>"><%= @ds.case %></span></td>
+                    </tr>
+                <% end %>
+            <% end %>
+            
+            <!-- The rest -->
+            <% if not @ds.is_snap? and not @ds.origin.nil? and @ds.origin != '-' %>
+                <tr title="<%= ZUtil.get_desc :ds, 'origin' %>">
+                    <td><strong>Origin:</strong></td>
+                    <td><%= @ds.origin %></td>
+                </tr>
+            <% end %>
+            <% if @ds.is_vol? and @ds.volblock %>
+                <tr title="<%= ZUtil.get_desc :ds, 'volblocksize' %>">
+                    <td><strong>Volume Block Size:</strong></td>
+                    <td><%= @ds.volblock %></td>
+                </tr>
+            <% end %>
+            <tr title="<%= ZUtil.get_desc :ds, 'checksum' %>">
+                <td><strong>Checksum:</strong></td>
+                <td><span class="label <%= (@ds.checksum == :auto) ? 'label-success' : 'label-info' %>"><%= @ds.checksum %></span></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'compress' %>">
+                <td><strong>Compression:</strong></td>
+                <td><span class="label <%= (@ds.compress == :off) ? '' : 'label-info' %>"><%= @ds.compress %></span></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'atime' %>">
+                <td><strong>Update access time on read?</strong></td>
+                <td><span class="label <%= @ds.atime ? 'label-info' : '' %>"><%= @ds.atime ? 'yes' : 'no' %></span></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'rdonly' %>">
+                <td><strong>Read-only?</strong></td>
+                <td><span class="label <%= @ds.rdonly ? 'label-info' : '' %>"><%= @ds.rdonly ? 'yes' : 'no' %></span></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'zoned' %>">
+                <td><strong>Non-global management zone?</strong></td>
+                <td><span class="label <%= @ds.zoned ? 'label-info' : '' %>"><%= @ds.zoned ? 'yes' : 'no' %></span></td>
+            </tr>
+            <% unless @ds.snapdir == :na %>
+                <tr title="<%= ZUtil.get_desc :ds, 'snapdir' %>">
+                    <td><strong>.zfs directory visibility:</strong></td>
+                    <td><span class="label <%= (@ds.snapdir == :hidden) ? '' : 'label-info' %>"><%= @ds.snapdir %></span></td>
+                </tr>
+            <% end %>
+            <% unless @ds.aclinherit == :na %>
+                <tr title="<%= ZUtil.get_desc :ds, 'aclinherit' %>">
+                    <td><strong>ACL inheritance:</strong></td>
+                    <td><span class="label <%= case @ds.aclinherit; when :discard then 'label-inverse'
+                                                when :noallow then 'label-warning'
+                                                when :restricted then 'label-important'
+                                                when :passthrough then 'label-info'
+                                                when :passthroughx then 'label-info'
+                                                end %>"><%= @ds.aclinherit %></span></td>
+                </tr>
+            <% end %>
+            <tr title="<%= ZUtil.get_desc :ds, 'xattr' %>">
+                <td><strong>Extended attributes:</strong></td>
+                <td><span class="label <%= @ds.xattr ? 'label-info' : '' %>"><%= @ds.xattr ? 'enabled' : 'disabled' %></span></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'copies' %>">
+                <td><strong>Copies:</strong></td>
+                <td><span class="badge badge-inverse"><%= @ds.copies %></span></td>
+            </tr>
+            
+        </table>
+    </div>
+</div>
+
+
+
+
+
+

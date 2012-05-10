@@ -8,13 +8,13 @@ class ZFSHost
     property :hostdescription,  Text
     property :lastupdate,       DateTime
     has n, :pools,              :model => 'ZFSPool'
-    has n, :mounts,             :model => 'ZFSMount'
+    has n, :datasets,             :model => 'ZFSDataset'
     
-    def self.activehosts
+    def activehosts
         all :lastupdate.gt => Time.now - (60 * 60 * 24), :order => [ :hostname.asc ]
     end
     
-    def self.stalehosts
+    def stalehosts
         all :lastupdate.lte => Time.now - (60 * 60 * 24), :order => [ :hostname.asc ]
     end
 
@@ -29,6 +29,9 @@ class ZFSPool
 
     # The name of the ZFS pool
     property :name,             String, :required => true
+    
+    # A unique ID for the dataset (the SHA-1 hash of the hostname + the name of the pool)
+    property :dsuniqueid,              String, :required => true, :unique => true
 
     # Each pool must specify its capacity, free space, and allocated space in bytes
     property :size,             Integer, :required => true, :min => 0, :max => 9223372036854775808, :default => 0
@@ -94,7 +97,7 @@ class ZFSPool
 
 end
 
-class ZFSMount
+class ZFSDataset
     include DataMapper::Resource
 
     property :id,               Serial
@@ -103,6 +106,9 @@ class ZFSMount
 
     # The name of the mount
     property :name,             String, :required => true
+    
+    # A unique ID for the dataset (the SHA-1 hash of the hostname + the name of the dataset)
+    property :dsuniqueid,       String, :required => true, :unique => true
     
     # The type of dataset: filesystem, volume, or snapshot.
     property :type,             Enum[ :filesystem, :volume, :snapshot ], :required => true
@@ -128,7 +134,7 @@ class ZFSMount
     property :ratio,            Float, :default => 1.0
 
     # Is this filesystem currently mounted? Note that zfs list prints '-' for
-    # mounts that are not filesystems
+    # datasets that are not filesystems
     property :mounted,          Boolean, :required => true, :default => false
 
     # For cloned file systems or volumes,  the  snapshot  from
@@ -231,18 +237,18 @@ class ZFSMount
     property :secondarycache,   Enum[ :all, :none, :metadata ]
 
     # The amount  of  space  consumed  by  snapshots  of  this dataset.
-    property :usedsnap,         Integer, :min => 0, :required => true
+    property :usedsnap,         Integer, :min => 0, :required => true, :max => 9223372036854775808
 
     # The amount of space used by this dataset  itself,  which would  be  freed  if  the  dataset were destroyed
-    property :usedds,           Integer, :min => 0, :required => true
+    property :usedds,           Integer, :min => 0, :required => true, :max => 9223372036854775808
 
     # The amount of space used by children  of  this  dataset, which  
     # would be freed if all the dataset's children were destroyed.
-    property :usedchild,        Integer, :min => 0, :required => true
+    property :usedchild,        Integer, :min => 0, :required => true, :max => 9223372036854775808
 
     # The amount of space used by a refreservation set on this dataset,  
     # which would be freed if the refreservation was removed.
-    property :usedrefreserv,    Integer, :min => 0, :required => true
+    property :usedrefreserv,    Integer, :min => 0, :required => true, :max => 9223372036854775808
 
     # This property is on if the snapshot has been marked  for deferred  destroy
     property :defer_destroy,    Boolean
@@ -286,6 +292,22 @@ class ZFSMount
     # Unknown
     property :caimaninstall,    String
     property :libbeuuid,        String
+    
+    def is_fs?
+        @type == :filesystem
+    end
+    
+    def is_vol?
+        @type == :volume
+    end
+    
+    def is_snap?
+        @type == :snapshot
+    end
+    
+    def is_mounted?
+        @type == :filesystem and @mounted
+    end
 
 end
 

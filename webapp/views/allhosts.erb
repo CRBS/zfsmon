@@ -11,7 +11,7 @@
                 <p><%= host.hostdescription %></p>
                 <ul>
                     <li><a href="/<%= host.hostname %>/pools">Pools</a>: <%= host.pools.count %></li>
-                    <li><a href="/<%= host.hostname %>/mounts">Filesystems</a>: <%= host.mounts.count %></li>
+                    <li><a href="/<%= host.hostname %>/datasets">Datasets</a>: <%= host.datasets.count %></li>
                 </ul>
             </div>
         <% if (index % 2 == 0) && (index > 0) %>
