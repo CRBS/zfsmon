@@ -3,7 +3,15 @@
 from zfsmond.abstractzfs import AbstractZFS
 import logging
 class ZMount(AbstractZFS):
-    def __init__(self, properties):
+    def __init__(self, properties, snapshot=False):
+        if snapshot:
+            # Sun inexplicably switched the last three columns around 
+            # when calling `zfs list -t snapshot -o all` versus
+            # `zfs list -o all`, but we don't need any of the data
+            # in those columns anyways, so just ditch the extra one
+            # so that property_parse() can parse it.
+            pwtf = properties.split('\t')
+            properties = '\t'.join(pwtf[:-2])
         super(ZMount, self).__init__(properties)
 
     @staticmethod
@@ -29,8 +37,7 @@ class ZMount(AbstractZFS):
                         'usedchild', 'usedrefreserv', 'defer_destroy', 'userrefs', 
                         'logbias', 'dedup', 'mlslabel', 'sync', 'crypt', 
                         'keysource', 'keystatus', 'rekeydate', 'rstchown', 
-                        'org.opensolaris.caiman:install', 
-                        'org.opensolaris.libbe:uuid']
+                        'org.opensolaris.caiman:install']
         
         # Parse the value for each key and put the k-v pair into the dict
         for i in xrange(len(ZFS_LIST_FIELDS)):

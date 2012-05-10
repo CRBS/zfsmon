@@ -11,8 +11,10 @@ import requests
 import tempfile
 import socket
 import time
+import hashlib
 import ConfigParser as configparser
 from urllib2 import quote
+
 
 from zfsmond.zpool import ZPool
 from zfsmond.zmount import ZMount
@@ -28,12 +30,30 @@ def main():
 
    # Open config file
     config = configparser.SafeConfigParser()
+    config_path = '/etc/zfsmond.conf'
+    
+    # Parse some command line args just to be nice
+    zfsmon_server_cli_arg = None
+    for arg in sys.argv[1:]:
+        if '--with-config=' in arg:
+            config_path = arg.rsplit('=')[1]
+        elif '--help' in arg or '--usage' in arg:
+            print "Usage: " + sys.argv[0] + " [--with-config=/path/to/cfg] [http://ZFSMON_SERVER_HOSTNAME]"
+            return 0
+            
+        # Interpret anything else not prefixed with '--' as a hostname to use for the zfsmon server
+        elif not '--' in arg:
+            zfsmon_server_cli_arg = arg
+        else:
+            print "Usage: " + sys.argv[0] + " [--with-config=/path/to/cfg] [http://ZFSMON_SERVER_HOSTNAME]"
+            return 1
+            
     try:
-        with open('/etc/zfsmond.conf', 'r') as f:
+        with open(config_path, 'r') as f:
             config.readfp(f)
     except IOError as e:
         ZFS_LOG.debug(str(e))
-        ZFS_LOG.error("No configuration file was found at '/etc/zfsmond.conf'. Using hard-coded defaults.")
+        ZFS_LOG.error("No configuration file was found at " + config_path + ". Using hard-coded defaults.")
         config = None
 
     # Parse config
@@ -51,7 +71,10 @@ def main():
                     ZFSMON_SERVER = ZFSMON_SERVER[:-1]
             if config.has_option('Network', 'hostname'):
                 HOSTNAME = config.get('Network', 'hostname')
-                
+    
+    # Set server after parsing if it was passed in as a command line option
+    if zfsmon_server_cli_arg: ZFSMON_SERVER = zfsmon_server_cli_arg
+    
     # Check if this host has been added yet
     # The line below checks if we got a 2xx HTTP status code
     if (requests.get( ZFSMON_SERVER + "/" + HOSTNAME ).status_code / 100) != 2:
@@ -81,19 +104,42 @@ def main():
         # Clean up names to be URL-safe because this doesn't work in AbstractZFS' constructor
         # for some reason
         pool.properties['name'] = quote(pool.properties['name'].replace('/', '-'))
+        # Create a unique ID for each by taking the SHA-1 hash of
+        # the hostname + the name of the dataset + "pool"
+        s = hashlib.sha1()
+        s.update(HOSTNAME + pool.properties['name'] + "pool")
+        pool.properties['dsuniqueid'] = s.hexdigest()
         
-    mounts = get_mounts()
-    for mount in mounts:
-        mount.properties['name'] = quote(mount.properties['name'].replace('/', '-'))
-        mount.name = mount.properties['name']
+    datasets = get_datasets()
+    for dataset in datasets:
+        dataset.properties['name'] = quote(dataset.properties['name'].replace('/', '-'))
+        dataset.name = dataset.properties['name']
+        # Create a unique ID for each by taking the SHA-1 hash of 
+        # the hostname + the name of the dataset + "ds"
+        s = hashlib.sha1()
+        s.update(HOSTNAME + dataset.properties['name'] + "ds")
+        dataset.properties['dsuniqueid'] = s.hexdigest()
     
+    snapshots = get_snapshots()
+    for snap in snapshots:
+        snap.name = quote(snap.properties['name'].replace('/', '-'))
+        snapped_ds_name = snap.name.partition('@')[0]
+
+        # Find the uniqueid for the ds this snap is from
+        for ds in datasets:
+            if ds.name == snapped_ds_name:
+                snap.properties['dsuniqueid'] = ds.properties['dsuniqueid']
+                break
     # Do the updates once we're sure that this host exists
     try:
         if not post_update(pools, HOSTNAME, ZFSMON_SERVER):
             ZFS_LOG.warning("Not all pools could be updated.")
             return 1
-        if not post_update(mounts, HOSTNAME, ZFSMON_SERVER):
-            ZFS_LOG.warning("Not all mounts could be updated.")
+        if not post_update(datasets, HOSTNAME, ZFSMON_SERVER):
+            ZFS_LOG.warning("Not all datasets could be updated.")
+            return 1
+        if not post_update(snapshots, HOSTNAME, ZFSMON_SERVER):
+            ZFS_LOG.warning("Not all snapshots could be updated.")
             return 1
     except TypeError as e:
         ZFS_LOG.error(str(e))
@@ -109,11 +155,14 @@ def post_update(zfsobjs, hostname=HOSTNAME, server=ZFSMON_SERVER):
     ZFS_LOG = logging.getLogger("zfsmond.http")
     updated = dict()
     for obj in zfsobjs:
-        # Check if this is a pool or a mount, and POST to the appropriate resource
+        # Check if this is a pool or a dataset, and POST to the appropriate resource
         if isinstance(obj, ZPool):
             rescollection = "pools"
         elif isinstance(obj, ZMount):
-            rescollection = "mounts"
+            if obj.properties['type'] == 'snapshot':
+                rescollection = 'snapshots'
+            else:
+                rescollection = "datasets"
         else: raise TypeError("Can't post a non-AbstractZFS object to the web service.")
         postreq = requests.post( server + "/" + hostname + "/" + rescollection + "/" + obj.name,
                                  data=obj.properties )
@@ -155,7 +204,7 @@ def get_pools():
         poolobjs.append(ZPool(poolstr))
     return poolobjs
 
-def get_mounts():
+def get_datasets():
     """ Gets the active ZFS mounted filesystems by calling `zfs list` and parsing the output. """
     try:
         with tempfile.TemporaryFile() as tf:
@@ -163,16 +212,34 @@ def get_mounts():
                 subprocess.check_call(['zfs', 'list', '-H', '-o', 'all'], stdout=tf)
                 tf.flush()
                 tf.seek(0)
-                mountinfostr = tf.read()
+                dsinfostr = tf.read()
     except subprocess.CalledProcessError as e:
         log = logging.getLogger("zfsmond")
         log.error("The call to `zfs list` failed. Info: " + str(e))
         return []
-    mountinfo = mountinfostr.splitlines()
-    mountobjs = []
-    for mountstr in mountinfo:
-        mountobjs.append(ZMount(mountstr))
-    return mountobjs
+    dsinfo = dsinfostr.splitlines()
+    dsobjs = []
+    for dsstr in dsinfo:
+        dsobjs.append(ZMount(dsstr))
+    return dsobjs
+
+def get_snapshots():
+    """ Gets the snapshot history for each filesystem. """
+    try:
+        with tempfile.TemporaryFile() as tf:
+                subprocess.check_call(['zfs', 'list', '-t', 'snapshot', '-o', '-all', '-H'], stdout=tf)
+                tf.flush()
+                tf.seek(0)
+                snapinfostr = tf.read()
+    except subprocess.CalledProcessError as e:
+        log = logging.getLogger("zfsmond")
+        log.error("The call to `zfs list -t snapshot` failed. Info: " + str(e))
+        return []
+    snapinfo = snapinfostr.splitlines()
+    snapobjs = []
+    for snapstr in snapinfo:
+        snapobjs.append(ZMount(snapstr, True))
+    return snapobjs
 
 if __name__ == "__main__":
     main()
