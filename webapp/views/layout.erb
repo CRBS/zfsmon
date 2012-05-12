@@ -26,11 +26,12 @@
                 <h1><a href="/" style="text-decoration: none;">zfs monitor</a> <%= if @title then "&mdash; #{@title}" else nil end %></h1>
             </div>
             <%= yield %>
+            &nbsp;
             <div class="row">
-                <div class="span8">
+                <div class="span8" id="footer">
                     &nbsp;
                 </div>
-            </div>
+            </div>&nbsp;
         </div>
     </body>
 </html>

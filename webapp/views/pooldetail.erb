@@ -45,7 +45,7 @@
                     <% when 'faulted', 'removed', 'unavail' then %>
                         <span class="label label-important">
                     <% when 'offline' then %>
-                        <span class="label label-inverse">
+                        <span class="label">
                     <% end %>
                     <%= @pool.health %>
                 </span></td>
@@ -56,14 +56,14 @@
             <tr><th>Property</th><th>Value</th></tr>
             <tr title="<%= ZUtil.get_desc :pool, 'altroot' %>"><td><strong>Alt Root: </strong></td><td><%= @pool.altroot %></td></tr>
             <tr title="<%= ZUtil.get_desc :pool, 'expand' %>"><td><strong>Auto Expand: </strong></td>
-                                                            <td><%= @pool.expand ? 'on' : 'off' %></td></tr>
+                                                            <td><%= ZUtil.build_bool_label @pool.expand %></td></tr>
             <tr title="<%= ZUtil.get_desc :pool, 'replace' %>"><td><strong>Auto Replace: </strong></td>
-                                                            <td><%= @pool.replace ? 'on' : 'off' %></td></tr>
+                                                            <td><%= ZUtil.build_bool_label @pool.replace %></td></tr>
             <tr title="<%= ZUtil.get_desc :pool, 'bootfs' %>"><td><strong>Boot FS: </strong></td><td><%= @pool.bootfs %></td></tr>
             <tr title="<%= ZUtil.get_desc :pool, 'cachefile' %>"><td><strong>Cache File: </strong></td><td><%= @pool.cachefile %></td></tr>
             <tr title="<%= ZUtil.get_desc :pool, 'dedup' %>"><td><strong>Dedup Ratio: </strong></td><td><%= @pool.dedup %></td></tr>
             <tr title="<%= ZUtil.get_desc :pool, 'delegation' %>"><td><strong>Delegation: </strong></td>
-                                                            <td><%= @pool.delegation ? 'on' : 'off' %></td></tr>
+                                                            <td><%= ZUtil.build_bool_label @pool.delegation %></td></tr>
             <tr title="<%= ZUtil.get_desc :pool, 'dedupditto' %>"><td><strong>Ditto Copy Threshold: </strong></td>
                                                             <td><%= @pool.dedupditto %></td></tr>
             <tr title="<%= ZUtil.get_desc :pool, 'failmode' %>"><td><strong>Failure Mode: </strong></td><td><%= @pool.failmode %></td></tr>

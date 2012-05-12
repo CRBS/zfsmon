@@ -116,6 +116,22 @@ td {
                         <td><span class="label <%= (@ds.case == :sensitive) ? 'label-info' : '' %>"><%= @ds.case %></span></td>
                     </tr>
                 <% end %>
+                <tr title="<%= ZUtil.get_desc :ds, 'vscan' %>">
+                    <td><strong>On-access virus scans?</strong></td>
+                    <td><span class="label <%= @ds.vscan ? 'label-info' : '' %>"><%= @ds.vscan ? 'yes' : 'no' %></span></td>
+                </tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'nbmand' %>">
+                    <td><strong>Mount with NBMand?</strong></td>
+                    <td><span class="label <%= @ds.nbmand ? 'label-info' : '' %>"><%= @ds.nbmand ? 'yes' : 'no' %></span></td>
+                </tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'sharesmb' %>">
+                    <td><strong>Shared via SMB?</strong></td>
+                    <td><span class="label <%= @ds.sharesmb ? 'label-info' : '' %>"><%= @ds.sharesmb ? 'yes' : 'no' %></span></td>
+                </tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'sync' %>">
+                    <td><strong>Synchronization:</strong></td>
+                    <td><span class="label label-info"><%= @ds.sync %></span></td>
+                </tr>
             <% end %>
             
             <!-- The rest -->
@@ -176,13 +192,101 @@ td {
                 <td><strong>Copies:</strong></td>
                 <td><span class="badge badge-inverse"><%= @ds.copies %></span></td>
             </tr>
-            
+            <tr title="<%= ZUtil.get_desc :ds, 'refquota' %>">
+                <td><strong>Referencable Quota:</strong></td>
+                <td><%= ZUtil.convert_human_bytes @ds.refquota %></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'primarycache' %>">
+                <td><strong>Primary caching:</strong></td>
+                <td>
+                    <span class="label <%= (@ds.primarycache == :all) ? 'label-success' : (@ds.primarycache == :metadata) ? 'label-info' : '' %>">
+                        <%= @ds.primarycache %>
+                    </span>
+                </td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'secondarycache' %>">
+                <td><strong>Secondary caching:</strong></td>
+                <td>
+                    <span class="label <%= (@ds.secondarycache == :all) ? 'label-success' : (@ds.secondarycache == :metadata) ? 'label-info' : '' %>">
+                        <%= @ds.secondarycache %>
+                    </span>
+                </td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'usedsnap' %>">
+                <td><strong>Space used by snapshots:</strong></td>
+                <td><%= ZUtil.convert_human_bytes @ds.usedsnap %></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'usedds' %>">
+                <td><strong>Used by this dataset:</strong></td>
+                <td><%= ZUtil.convert_human_bytes @ds.usedds %></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'usedchild' %>">
+                <td><strong>Used by children:</strong></td>
+                <td><%= ZUtil.convert_human_bytes @ds.usedchild %></td>
+            </tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'refreserv' %>">
+                <td><strong>Minimum Reserved:</strong></td>
+                <td><%= ZUtil.convert_human_bytes @ds.refreserv %></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'usedrefreserv' %>">
+                <td><strong>Used by refreservation:</strong></td>
+                <td><%= ZUtil.convert_human_bytes @ds.usedrefreserv %></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'defer_destroy' %>">
+                <td><strong>Marked for deferred destroy?</strong></td>
+                <td><span class="label <%= @ds.defer_destroy ? 'label-important' : '' %>"><%= @ds.defer_destroy ? 'yes' : 'no' %></span></td>
+            </tr>
+            <% if @ds.type == :snapshot %>
+                <tr title="<%= ZUtil.get_desc :ds, 'userrefs' %>">
+                    <td><strong>Number of user holds on snapshot:</strong></td>
+                    <td><%= @ds.userrefs %></td>
+                </tr>
+            <% end %>
+            <tr title="<%= ZUtil.get_desc :ds, 'logbias' %>">
+                <td><strong>Log bias:</strong></td>
+                <td><span class="label <%= (@ds.logbias == :latency) ? 'label-success' : 'label-info' %>"><%= @ds.logbias %></span></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'dedup' %>">
+                <td><strong>Deduplication:</strong></td>
+                <td><span class="label <%= (@ds.dedup == :on) ? 'label-success' : '' %>"><%= @ds.dedup %></span></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'mlslabel' %>">
+                <td><strong>Sensitivity label:</strong></td>
+                <td><%= @ds.mlslabel %></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'crypt' %>">
+                <td><strong>Encryption:</strong></td>
+                <td><span class="label <%= (@ds.crypt == :off) ? '' : 'label-info' %>"><%= @ds.crypt %></span></td>
+            </tr>
+            <% unless @ds.crypt == :off %>
+                <!-- Only for datasets with encryption enabled -->
+                <tr title="<%= ZUtil.get_desc :ds, 'rekeydate' %>">
+                    <td><strong>Dataset last re-key date:</strong></td>
+                    <td><%= if @ds.rekeydate then @ds.rekeydate.strftime format='%A, %B %d, %Y at %l:%M %P ' %></td>
+                </tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'keysourceformat' %>">
+                    <td><strong>Dataset encryption key format:</strong></td>
+                    <td><span class="label <%= (@ds.keysourceformat == :none) ? '' : 'label-info' %>"><%= @ds.keysourceformat %></span></td>
+                </tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'keysourcelocation' %>">
+                    <td><strong>Dataset encryption key location:</strong></td>
+                    <td><span class="label <%= (@ds.keysourcelocation == :none) ? '' : 'label-info' %>"<%= @ds.keysourcelocation %></span></td>
+                </tr>
+                <tr title="<%= ZUtil.get_desc :ds, 'keystatus' %>">
+                    <td><strong>Dataset encryption key status:</strong></td>
+                    <td><span class="label <%= (@ds.keystatus == :unavailable) ? 'label-important' : (@ds.keystatus == :available) ? 'label-success' : '' %>">
+                            <%= @ds.keystatus %>
+                        </span>
+                    </td>
+                </tr>
+            <% end %>
+            <tr title="<%= ZUtil.get_desc :ds, 'rstchown' %>">
+                <td><strong>Restrict chown?</strong></td>
+                <td><span class="label <%= @ds.rstchown ? 'label-info' : '' %>"><%= @ds.rstchown ? 'yes' : 'no' %></span></td>
+            </tr>
         </table>
     </div>
 </div>
-
-
-
 
 
 

@@ -190,7 +190,23 @@ module ZUtil
         end
         return "#{format('%.2f', size)} #{suffixes[i]}"
     end
+    
+    def ZUtil.build_bool_label( field, tf_names=nil)
+        # tf_names is an optional hash to replace the words used for the boolean value
+        # on/off by default, but some fields want yes/no, etc.
+        tf_names ||= { true => 'on', false => 'off' }
+        return '' if field == nil
+        str = "<span class=\"label"
+        if field then
+            str << " label-info\">"
+        else
+            str << "\">"
+        end
+        str << tf_names[field] << "</span>"
+        return str
+    end
         
+#        <span class="label <%= @ds.setuid ? 'label-info' : '' %>"><%= @ds.setuid ? 'yes' : 'no' %></span>
     
     def ZUtil.build_breadcrumb_string( elements )
         return "<a href=\"/#{elements[0]}\">#{elements[0]}</a>" if elements.size == 1
