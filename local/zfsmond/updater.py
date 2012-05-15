@@ -227,7 +227,7 @@ def get_snapshots():
     """ Gets the snapshot history for each filesystem. """
     try:
         with tempfile.TemporaryFile() as tf:
-                subprocess.check_call(['zfs', 'list', '-t', 'snapshot', '-o', '-all', '-H'], stdout=tf)
+                subprocess.check_call(['zfs', 'list', '-t', 'snapshot', '-o', 'all', '-H'], stdout=tf)
                 tf.flush()
                 tf.seek(0)
                 snapinfostr = tf.read()
