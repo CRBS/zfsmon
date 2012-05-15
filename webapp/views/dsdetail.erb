@@ -262,7 +262,7 @@ td {
                 <!-- Only for datasets with encryption enabled -->
                 <tr title="<%= ZUtil.get_desc :ds, 'rekeydate' %>">
                     <td><strong>Dataset last re-key date:</strong></td>
-                    <td><%= if @ds.rekeydate then @ds.rekeydate.strftime format='%A, %B %d, %Y at %l:%M %P ' %></td>
+                    <td><%= @ds.rekeydate.strftime format='%A, %B %d, %Y at %l:%M %P ' if @ds.rekeydate %></td>
                 </tr>
                 <tr title="<%= ZUtil.get_desc :ds, 'keysourceformat' %>">
                     <td><strong>Dataset encryption key format:</strong></td>
