@@ -51,6 +51,17 @@ td {
                 <td><%= @ds.ratio %></td>
             </tr>
         </table>&nbsp;
+        <h3>Snapshots</h3>
+        <% if @ds.snapshots.size > 0 %>
+            <table class="table-striped sortable">
+                <tr><th>Name</th><th>Creation Date</th></tr>
+                <% @ds.snapshots.each do |snap| %>
+                    <tr><td><%= snap.name %></td><td><%= snap.creation.strftime format='%A, %B %d, %Y at %l:%M %P' %></td></tr>
+                <% end %>
+            </table>&nbsp;
+        <% else %>
+            <p>This dataset currently has no snapshots saved.</p>
+        <% end %>
         <h3>Properties</h3>
         <table class="table-striped sortable">
             <tr><th>Property</th><th>Value</th></tr>

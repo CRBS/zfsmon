@@ -122,12 +122,14 @@ def main():
     
     snapshots = get_snapshots()
     for snap in snapshots:
-        snap.name = quote(snap.properties['name'].replace('/', '-'))
-        snapped_ds_name = snap.name.partition('@')[0]
+        snap.properties['name'] = snap.properties['name'].replace('/', '-')
+        snap.snapped_ds_name = snap.properties['name'].partition('@')[0]
+        snap.properties['name'] = snap.properties['name'].partition('@')[2]
+        snap.name = quote(snap.properties['name'])
 
         # Find the uniqueid for the ds this snap is from
         for ds in datasets:
-            if ds.name == snapped_ds_name:
+            if ds.name == snap.snapped_ds_name:
                 snap.properties['dsuniqueid'] = ds.properties['dsuniqueid']
                 break
     # Do the updates once we're sure that this host exists
@@ -140,7 +142,7 @@ def main():
             return 1
         if not post_update(snapshots, HOSTNAME, ZFSMON_SERVER):
             ZFS_LOG.warning("Not all snapshots could be updated.")
-            return 1
+            return 0
     except TypeError as e:
         ZFS_LOG.error(str(e))
         ZFS_LOG.error("Update failed.")
@@ -154,13 +156,16 @@ def post_update(zfsobjs, hostname=HOSTNAME, server=ZFSMON_SERVER):
         server is the zfs monitor server's hostname """
     ZFS_LOG = logging.getLogger("zfsmond.http")
     updated = dict()
+    snapshots = False
     for obj in zfsobjs:
         # Check if this is a pool or a dataset, and POST to the appropriate resource
         if isinstance(obj, ZPool):
             rescollection = "pools"
         elif isinstance(obj, ZMount):
             if obj.properties['type'] == 'snapshot':
-                rescollection = 'snapshots'
+                snapshots = True
+                post_snapshot(obj, hostname, server)
+                continue
             else:
                 rescollection = "datasets"
         else: raise TypeError("Can't post a non-AbstractZFS object to the web service.")
@@ -182,8 +187,32 @@ def post_update(zfsobjs, hostname=HOSTNAME, server=ZFSMON_SERVER):
             else:
                 ZFS_LOG.info('Successfully updated {0}/{1} on {2}.'.format( HOSTNAME, res, ZFSMON_SERVER ))
         return True
+    if snapshots: return True
     return False
 
+def post_snapshot(snap, hostname, server):
+    ZFS_LOG = logging.getLogger("zfsmond.http")
+    dataset = snap.snapped_ds_name
+    postreq = requests.post( server + '/' + hostname + '/datasets/' + dataset + '/snapshots/' + snap.name, 
+                             data=snap.properties )
+    if postreq.status_code / 100 != 2:
+        ZFS_LOG.error(('An HTTP {statuscode} error was encountered when updating the snapshot ' +
+                        '{hname}/{ds}/{snap} on {serv}.').format( statuscode=str(postreq.status_code),
+                                                                hname=hostname,
+                                                                ds=dataset,
+                                                                snap=snap.properties['name'],
+                                                                serv=server ))
+        return False
+    elif postreq.status_code == 201:
+        ZFS_LOG.info('Successfully created new snapshot record {0}/{1}/{2} on {3}.'.format( HOSTNAME, dataset, 
+                                                                                            snap.properties['name'], 
+                                                                                            ZFSMON_SERVER ))
+    else:
+        ZFS_LOG.info('Successfully updated {0}/{1}/{2} on {3}.'.format( HOSTNAME, dataset, 
+                                                                        snap.properties['name'], 
+                                                                        ZFSMON_SERVER ))
+    return True
+    
 def get_pools():
     """ Gets the active ZFS pools by calling `zpool list` and parsing the output. Returns a list of ZPool objects
         populated with the properties returned by zpool list -H -o all. """

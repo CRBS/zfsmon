@@ -1,6 +1,6 @@
 # Extra methods for parsing and data transformation and hashes for other things
 module ZUtil
-    # Need to move these hashes into a database at some point.
+    # Need to move these hashes into a database or something at some point.
     ZPOOL_DESCRIPTIONS = { 'name' =>     'The name of the ZFS pool',
                             'size' =>     'The total size of the storage pool',
                             'cap' =>      'Percentage of pool space used.',
@@ -167,6 +167,7 @@ module ZUtil
     def ZUtil.get_ds_record( hostrec, filesystem )
         hostrec.datasets.first_or_create :host => hostrec, :name => filesystem
     end
+    
     
     def ZUtil.get_desc( datatype, field )
         if datatype == :pool then

@@ -164,6 +164,89 @@ get '/:host/datasets/:ds/?' do
     erb :dsdetail
 end
 
+get '/:host/datasets/:ds/snapshots/?' do
+    @host = ZUtil.get_host_record params[:host]
+    if not @host
+        host_not_found params[:host]
+    end
+    @ds = ZUtil.get_pool_record @host, params[:ds]
+    @snaps = @ds.snapshots
+    @title = "All snapshots of #{@ds.name} on #{@host.hostname}"
+    erb :ds_snapview
+end
+
+post '/:host/datasets/:ds/snapshots/:snap/?' do
+    @host = ZUtil.get_host_record params[:host]
+    if not @host
+        host_not_found params[:host]
+    end
+    @ds = ZUtil.get_ds_record @host, params[:ds]
+    @snap = @ds.snapshots.first_or_create :dataset => @ds, :name => params[:snap]
+    request.POST.each do |k, v|
+        if not ZUtil::ZFS_DATASET_FIELDS.include? k
+            next
+        end
+        if ZUtil::ZFS_DATASET_SIZE_FIELDS.include? k
+            v = v.to_i
+        end
+        # ZFS returns 'on' and 'off' for certain fields but DM expects
+        # boolean values. The unless block is to skip enums where 'on' or 'off' is a valid
+        # identifier
+        unless ['crypt', 'dedup', 'canmount', 'compress', 'checksum'].include? k
+            if v == 'on'
+                v = true
+            elsif v == 'off'
+                v = false
+            end
+        end
+        
+        # Some fields say that they are 'on' or 'off' in the docs but inexplicably
+        # print a '-' instead of off
+        if ZUtil::ZFS_STUPID_BOOLEAN_FIELDS.include? k and v == '-'
+                v = false
+        end
+        
+        if k == 'mounted'
+            v = (v == 'yes') ? true : false
+        end
+        
+        if k == 'name'
+            v.gsub! '/', '-'
+        end
+        
+        if k == 'checksum' and v == 'on'
+            v = 'auto'
+        end
+        
+        if ['canmount', 'snapdir', 'case', 'aclinherit', 'normalization'].include? k and v == '-'
+            v = 'na'
+        end
+        
+        # Fields that only apply to filesystems... leave nil if '-'
+        if ['userrefs', 'version', 'rekeydate', 'volsize', 
+            'checksum', 'compress', 'rdonly', 'copies', 'logbias', 'dedup', 'sync'].include? k and v == '-'
+            next
+        end
+        
+        # ratio is a float but ZFS puts an 'x' on the end
+        if k == 'ratio'
+            v = v[0..-1].to_f
+        end
+        @snap.attribute_set k.to_sym, v
+    end
+    if @snap.dirty?
+    @host.update :lastupdate => Time.now
+    @snap.attributes :lastupdate => Time.now
+    @snap.save
+    end
+    if not @snap.saved? then
+        puts "------- error saving #{@snap.name} -------"
+        @snap.errors.each do |e|
+            puts e.to_s
+        end
+    end
+end
+
 post '/:host/datasets/:ds/?' do
     @host = ZUtil.get_host_record params[:host]
     if not @host
