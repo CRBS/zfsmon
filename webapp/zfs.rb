@@ -133,7 +133,7 @@ post '/:host/pools/:pool/?' do
                 v = v[0..-1].to_f
             end
             if v == '-' and not ZUtil::ZFS_POOL_SIZE_FIELDS.include? k
-                v = nil
+                next
             end
             @pool.attribute_set k.to_sym, v
         end
