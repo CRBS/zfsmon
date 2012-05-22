@@ -16,13 +16,19 @@ td {
     padding-right: 15px;
     padding-bottom: 2px;
 }
+table.fixed {
+    table-layout: fixed; 
+    width: 70%;
+}
+
 </style>
 
 <div class="row">
     <div class="span8">
         <h2><a href="/<%= "#{@host.hostname}/datasets/#{@ds.name}" %>"><%= @ds.name %></a></h2>
+        
         <h3>Storage</h3>
-        <table class="table-striped">
+        <table class="table-striped fixed">
             <tr title="<%= ZUtil.get_desc :ds, 'type' %>"><td><strong>Type:</strong></td><td><%= @ds.type %></td></tr>
             <tr title="<%= ZUtil.get_desc :ds, 'creation' %>">
                 <td><strong>Creation Date:</strong></td>
@@ -51,6 +57,47 @@ td {
                 <td><%= @ds.ratio %></td>
             </tr>
         </table>&nbsp;
+        
+        <h3>Status</h3>
+        <table class="table-striped fixed">
+                <% if @ds.is_fs? %>
+                    <tr title="<%= ZUtil.get_desc :ds, 'mounted' %>">
+                        <td><strong>Mounted?</strong></td>
+                        <td><span class="label <%= @ds.mounted ? 'label-info' : '' %>"><%= @ds.mounted ? 'yes' : 'no' %></span></td>
+                    </tr>
+                    <% if @ds.is_mounted? %>
+                        <tr title="<%= ZUtil.get_desc :ds, 'mountpoint' %>">
+                            <td><strong>Mount Point:</strong></td>
+                            <td><code><%= @ds.mountpoint %></code></td>
+                        </tr>
+                    <% end %>  
+                <% end %>        
+            <tr title="<%= ZUtil.get_desc :ds, 'compress' %>">
+                <td><strong>Compression:</strong></td>
+                <td><span class="label <%= (@ds.compress == :off) ? '' : 'label-info' %>"><%= @ds.compress %></span></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'crypt' %>">
+                <td><strong>Encryption:</strong></td>
+                <td><span class="label <%= (@ds.crypt == :off) ? '' : 'label-info' %>"><%= @ds.crypt %></span></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'dedup' %>">
+                <td><strong>Deduplication:</strong></td>
+                <td><span class="label <%= (@ds.dedup == :on) ? 'label-success' : '' %>"><%= @ds.dedup %></span></td>
+            </tr>
+        </table>&nbsp;
+        
+         <h3>Sharing</h3>
+        <table class="table-striped fixed">
+            <tr title="<%= ZUtil.get_desc :ds, 'sharenfs' %>">
+                <td><strong>Shared via NFS?</strong></td>
+                <td><span class="label <%= @ds.sharenfs ? 'label-info' : '' %>"><%= @ds.sharenfs ? 'yes' : 'no' %></span></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :ds, 'sharesmb' %>">
+                <td><strong>Shared via SMB?</strong></td>
+                <td><span class="label <%= @ds.sharesmb ? 'label-info' : '' %>"><%= @ds.sharesmb ? 'yes' : 'no' %></span></td>
+            </tr>
+        </table>&nbsp;    
+                  
         <h3>Snapshots</h3>
         <% if @ds.snapshots.size > 0 %>
             <table class="table-striped sortable">
@@ -64,10 +111,11 @@ td {
                 <% end %>
             </table>&nbsp;
         <% else %>
-            <p>This dataset currently has no snapshots saved.</p>
+            <p>This dataset currently has no snapshots saved.</p>&nbsp;
         <% end %>
+        
         <h3>Properties</h3>
-        <table class="table-striped sortable">
+        <table class="table-striped sortable fixed">
             <tr><th>Property</th><th>Value</th></tr>
             <% if @ds.quota and @ds.quota > 0 then %>
                 <tr title="<%= ZUtil.get_desc :ds, 'quota' %>"><td><strong>Quota:</strong></td><td><%= @ds.quota %></td></tr>
@@ -75,26 +123,12 @@ td {
             
             <!-- Filesystem-only properties -->
             <% if @ds.is_fs? %>
-                <tr title="<%= ZUtil.get_desc :ds, 'mounted' %>">
-                    <td><strong>Mounted?</strong></td>
-                    <td><span class="label <%= @ds.mounted ? 'label-info' : '' %>"><%= @ds.mounted ? 'yes' : 'no' %></span></td>
-                </tr>
-                <% if @ds.is_mounted? %>
-                    <tr title="<%= ZUtil.get_desc :ds, 'mountpoint' %>">
-                        <td><strong>Mount Point:</strong></td>
-                        <td><code><%= @ds.mountpoint %></code></td>
-                    </tr>
-                <% end %>
                 <% if @ds.recsize %>
                 <tr title="<%= ZUtil.get_desc :ds, 'recsize' %>">
                     <td><strong>Suggested Block Size:</strong></td>
                     <td><%= ZUtil.convert_human_bytes @ds.recsize %></td>
                 </tr>
                 <% end %>
-                <tr title="<%= ZUtil.get_desc :ds, 'sharenfs' %>">
-                    <td><strong>Shared via NFS?</strong></td>
-                    <td><span class="label <%= @ds.sharenfs ? 'label-info' : '' %>"><%= @ds.sharenfs ? 'yes' : 'no' %></span></td>
-                </tr>
                 <tr title="<%= ZUtil.get_desc :ds, 'devices' %>">
                     <td><strong>Device mknod enabled?</strong></td>
                     <td><span class="label <%= @ds.devices ? 'label-info' : '' %>"><%= @ds.devices ? 'yes' : 'no' %></span></td>
@@ -139,10 +173,6 @@ td {
                     <td><strong>Mount with NBMand?</strong></td>
                     <td><span class="label <%= @ds.nbmand ? 'label-info' : '' %>"><%= @ds.nbmand ? 'yes' : 'no' %></span></td>
                 </tr>
-                <tr title="<%= ZUtil.get_desc :ds, 'sharesmb' %>">
-                    <td><strong>Shared via SMB?</strong></td>
-                    <td><span class="label <%= @ds.sharesmb ? 'label-info' : '' %>"><%= @ds.sharesmb ? 'yes' : 'no' %></span></td>
-                </tr>
                 <tr title="<%= ZUtil.get_desc :ds, 'sync' %>">
                     <td><strong>Synchronization:</strong></td>
                     <td><span class="label label-info"><%= @ds.sync %></span></td>
@@ -165,10 +195,6 @@ td {
             <tr title="<%= ZUtil.get_desc :ds, 'checksum' %>">
                 <td><strong>Checksum:</strong></td>
                 <td><span class="label <%= (@ds.checksum == :auto) ? 'label-success' : 'label-info' %>"><%= @ds.checksum %></span></td>
-            </tr>
-            <tr title="<%= ZUtil.get_desc :ds, 'compress' %>">
-                <td><strong>Compression:</strong></td>
-                <td><span class="label <%= (@ds.compress == :off) ? '' : 'label-info' %>"><%= @ds.compress %></span></td>
             </tr>
             <tr title="<%= ZUtil.get_desc :ds, 'atime' %>">
                 <td><strong>Update access time on read?</strong></td>
@@ -261,17 +287,9 @@ td {
                 <td><strong>Log bias:</strong></td>
                 <td><span class="label <%= (@ds.logbias == :latency) ? 'label-success' : 'label-info' %>"><%= @ds.logbias %></span></td>
             </tr>
-            <tr title="<%= ZUtil.get_desc :ds, 'dedup' %>">
-                <td><strong>Deduplication:</strong></td>
-                <td><span class="label <%= (@ds.dedup == :on) ? 'label-success' : '' %>"><%= @ds.dedup %></span></td>
-            </tr>
             <tr title="<%= ZUtil.get_desc :ds, 'mlslabel' %>">
                 <td><strong>Sensitivity label:</strong></td>
                 <td><%= @ds.mlslabel %></td>
-            </tr>
-            <tr title="<%= ZUtil.get_desc :ds, 'crypt' %>">
-                <td><strong>Encryption:</strong></td>
-                <td><span class="label <%= (@ds.crypt == :off) ? '' : 'label-info' %>"><%= @ds.crypt %></span></td>
             </tr>
             <% unless @ds.crypt == :off %>
                 <!-- Only for datasets with encryption enabled -->

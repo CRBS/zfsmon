@@ -169,10 +169,10 @@ get '/:host/datasets/:ds/snapshots/?' do
     if not @host
         host_not_found params[:host]
     end
-    @ds = ZUtil.get_pool_record @host, params[:ds]
+    @ds = ZUtil.get_ds_record @host, params[:ds]
     @snaps = @ds.snapshots
     @title = "All snapshots of #{@ds.name} on #{@host.hostname}"
-    erb :ds_snapview
+    redirect '/'
 end
 
 post '/:host/datasets/:ds/snapshots/:snap/?' do

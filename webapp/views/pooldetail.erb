@@ -11,11 +11,17 @@
 </div>
 
 <hr />
+<style type="text/css">
+    table.fixed {
+        table-layout: fixed; 
+        width: 70%;
+    }
+</style>
 <div class="row">
     <div class="span8">
         <h2><a href="/<%= "#{@host.hostname}/pools/#{@pool.name}" %>"><%= @pool.name %></a></h2>
         <h3>Storage</h3>
-        <table class="table-striped">
+        <table class="table-striped fixed">
             <tr>
                 <td title="<%= ZUtil.get_desc :pool, 'free' %>"><strong>Free: </strong></td>
                 <td title="<%= "#{@pool.free} bytes" %>"><%= ZUtil.convert_human_bytes @pool.free %></td>
@@ -52,27 +58,45 @@
             </tr>
         </table>&nbsp;
         <h3>Properties</h3>
-        <table class="table-striped sortable">
+        <table class="table-striped sortable fixed">
             <tr><th>Property</th><th>Value</th></tr>
             <tr title="<%= ZUtil.get_desc :pool, 'altroot' %>"><td><strong>Alt Root: </strong></td><td><%= @pool.altroot %></td></tr>
             <tr title="<%= ZUtil.get_desc :pool, 'expand' %>"><td><strong>Auto Expand: </strong></td>
                                                             <td><%= ZUtil.build_bool_label @pool.expand %></td></tr>
             <tr title="<%= ZUtil.get_desc :pool, 'replace' %>"><td><strong>Auto Replace: </strong></td>
                                                             <td><%= ZUtil.build_bool_label @pool.replace %></td></tr>
-            <tr title="<%= ZUtil.get_desc :pool, 'bootfs' %>"><td><strong>Boot FS: </strong></td><td><%= @pool.bootfs %></td></tr>
+            <tr title="<%= ZUtil.get_desc :pool, 'bootfs' %>">
+                <td><strong>Boot FS: </strong></td>
+                <td><code><%= @pool.bootfs %></code></td>
+            </tr>
             <tr title="<%= ZUtil.get_desc :pool, 'cachefile' %>"><td><strong>Cache File: </strong></td><td><%= @pool.cachefile %></td></tr>
-            <tr title="<%= ZUtil.get_desc :pool, 'dedup' %>"><td><strong>Dedup Ratio: </strong></td><td><%= @pool.dedup %></td></tr>
+            <tr title="<%= ZUtil.get_desc :pool, 'dedup' %>">
+                <td><strong>Dedup Ratio: </strong></td>
+                <td><%= @pool.dedup %></td>
+            </tr>
             <tr title="<%= ZUtil.get_desc :pool, 'delegation' %>"><td><strong>Delegation: </strong></td>
                                                             <td><%= ZUtil.build_bool_label @pool.delegation %></td></tr>
-            <tr title="<%= ZUtil.get_desc :pool, 'dedupditto' %>"><td><strong>Ditto Copy Threshold: </strong></td>
-                                                            <td><%= @pool.dedupditto %></td></tr>
-            <tr title="<%= ZUtil.get_desc :pool, 'failmode' %>"><td><strong>Failure Mode: </strong></td><td><%= @pool.failmode %></td></tr>
+            <tr title="<%= ZUtil.get_desc :pool, 'dedupditto' %>">
+                <td><strong>Ditto Copy Threshold: </strong></td>
+                <td><span class="badge badge-inverse"><%= @pool.dedupditto %></span></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :pool, 'failmode' %>">
+                <td><strong>Failure Mode: </strong></td>
+                <td><span class="label label-info"><%= @pool.failmode %></label></td>
+            </tr>
             <tr title="<%= ZUtil.get_desc :pool, 'dsuniqueid' %>"><td><strong>Unique ID: </strong></td><td><%= @pool.dsuniqueid %></td></tr>
-            <tr title="<%= ZUtil.get_desc :pool, 'listsnaps' %>"><td><strong>List Snapshots: </strong></td>
-                                                            <td><%= @pool.listsnaps ? 'on' : 'off' %></td></tr>
-            <tr title="<%= ZUtil.get_desc :pool, 'rdonly' %>"><td><strong>Read-only: </strong></td>
-                                                            <td><%= @pool.rdonly ? 'yes' : 'no' %></td></tr>
-            <tr title="<%= ZUtil.get_desc :pool, 'version' %>"><td><strong>Version: </strong></td><td><%= @pool.version %></td></tr>
+            <tr title="<%= ZUtil.get_desc :pool, 'listsnaps' %>">
+                <td><strong>List Snapshots: </strong></td>
+                <td><%= ZUtil.build_bool_label @pool.listsnaps %></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :pool, 'rdonly' %>">
+                <td><strong>Read-only: </strong></td>
+                <td><%= ZUtil.build_bool_label @pool.rdonly, { true => 'yes', false => 'no' } %></td>
+            </tr>
+            <tr title="<%= ZUtil.get_desc :pool, 'version' %>">
+                <td><strong>Version: </strong></td>
+                <td><span class="badge badge-inverse"><%= @pool.version %></span></td>
+            </tr>
         </table>
     </div>
 </div>
