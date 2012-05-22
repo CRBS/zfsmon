@@ -128,6 +128,9 @@ post '/:host/pools/:pool/?' do
             if k == 'dedup'
                 v = v[0..-1].to_f
             end
+            if v == '-'
+                v = nil
+            end
             @pool.attribute_set k.to_sym, v
         end
     end

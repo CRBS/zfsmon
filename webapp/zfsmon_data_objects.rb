@@ -50,14 +50,14 @@ class ZFSPool
     property :guid,             String, :required => true, :unique => true
     
     # The current on-disk version of the  pool.
-    property :version,          Integer, :required => true, :default => 0
+    property :version,          Integer, :default => 0
 
     # Identifies the default bootable dataset for the root pool.
     property :bootfs,           String
 
     # Controls whether a non-privileged user is granted access 
     # based on the dataset permissions defined on the dataset.
-    property :delegation,       Boolean, :required => true
+    property :delegation,       Boolean
     
     # Controls automatic device replacement. If set to  "off", 
     # device  replacement must be initiated by the administrator 
@@ -65,13 +65,13 @@ class ZFSPool
     # any  new device, found in the same physical location as a 
     # device that previously belonged to  the  pool, is  
     # automatically  formatted  and  replaced.
-    property :replace,          Boolean, :required => true
+    property :replace,          Boolean
 
     # Controls the location of where the pool configuration is cached.
     property :cachefile,        String, :default => '-'
 
     # Controls the system behavior in the event of catastrophic pool failure.
-    property :failmode,         Enum[ :wait, :continue, :panic ], :required => true
+    property :failmode,         Enum[ :wait, :continue, :panic ]
 
     # Controls whether information about snapshots  associated with  this 
     # pool is output when "zfs list" is run without the -t option. The default value is "off".
@@ -90,10 +90,10 @@ class ZFSPool
     # This  value is expressed as a single decimal number. For example, a dedupratio 
     # value of  1.76 indicates that 1.76 units of data were stored but only 1 unit of 
     # disk space was actually consumed.
-    property :dedup,            Float, :required => true, :default => 1.0
+    property :dedup,            Float, :default => 1.0
 
     # Controls whether the pool can be modified.
-    property :rdonly,           Boolean, :required => true
+    property :rdonly,           Boolean
 
 end
 
