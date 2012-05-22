@@ -100,7 +100,11 @@ post '/:host/pools/:pool/?' do
             next
         else
             if ZUtil::ZFS_POOL_SIZE_FIELDS.include? k
-                v = v.to_i
+                if v == '-' then
+                    v = 0
+                else
+                    v = v.to_i
+                end
             end
             
             if ZUtil::ZFS_ENUM_FIELDS.include? k
@@ -128,7 +132,7 @@ post '/:host/pools/:pool/?' do
             if k == 'dedup'
                 v = v[0..-1].to_f
             end
-            if v == '-'
+            if v == '-' and not ZUtil::ZFS_POOL_SIZE_FIELDS.include? k
                 v = nil
             end
             @pool.attribute_set k.to_sym, v
