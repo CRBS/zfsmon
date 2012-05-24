@@ -23,6 +23,8 @@ HOSTNAME = socket.gethostname()
 def main():
     global ZFSMON_SERVER
     global HOSTNAME
+    POOLFIELDS = 'all'
+    DSFIELDS = 'all'
 
     # Open the log
     logging.basicConfig()
