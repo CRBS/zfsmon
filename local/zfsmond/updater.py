@@ -78,7 +78,7 @@ def main():
                     DSFIELDS = config.get('ZFS', 'ds_fields')
             else:
                 ZFS_LOG.error("Config file is missing the Parser section.")
-                sys.exit 1
+                sys.exit(1)
     
     # Set server after parsing if it was passed in as a command line option
     if zfsmon_server_cli_arg: ZFSMON_SERVER = zfsmon_server_cli_arg
