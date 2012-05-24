@@ -20,10 +20,10 @@ from zfsmond.zpool import ZPool
 from zfsmond.zmount import ZMount
 ZFSMON_SERVER = "http://" + "127.0.0.1:4567"
 HOSTNAME = socket.gethostname()
-
 def main():
     global ZFSMON_SERVER
     global HOSTNAME
+
     # Open the log
     logging.basicConfig()
     ZFS_LOG = logging.getLogger("zfsmond")
@@ -71,6 +71,14 @@ def main():
                     ZFSMON_SERVER = ZFSMON_SERVER[:-1]
             if config.has_option('Network', 'hostname'):
                 HOSTNAME = config.get('Network', 'hostname')
+            if config.has_section('Parser'):
+                if config.has_option('ZFS', 'pool_fields'):
+                    POOLFIELDS = config.get('ZFS', 'pool_fields')
+                if config.has_option('ZFS', 'ds_fields'):
+                    DSFIELDS = config.get('ZFS', 'ds_fields')
+            else:
+                ZFS_LOG.error("Config file is missing the Parser section.")
+                sys.exit 1
     
     # Set server after parsing if it was passed in as a command line option
     if zfsmon_server_cli_arg: ZFSMON_SERVER = zfsmon_server_cli_arg
@@ -110,7 +118,7 @@ def main():
         s.update(HOSTNAME + pool.properties['name'] + "pool")
         pool.properties['dsuniqueid'] = s.hexdigest()
         
-    datasets = get_datasets()
+    datasets = get_datasets(DSFIELDS)
     for dataset in datasets:
         dataset.properties['name'] = quote(dataset.properties['name'].replace('/', '-'))
         dataset.name = dataset.properties['name']
@@ -233,12 +241,12 @@ def get_pools():
         poolobjs.append(ZPool(poolstr))
     return poolobjs
 
-def get_datasets():
+def get_datasets(FIELDS='all'):
     """ Gets the active ZFS mounted filesystems by calling `zfs list` and parsing the output. """
     try:
         with tempfile.TemporaryFile() as tf:
                 # Call `zfs list` with -H to suppress pretty-print and header row
-                subprocess.check_call(['zfs', 'list', '-H', '-o', 'all'], stdout=tf)
+                subprocess.check_call(['zfs', 'list', '-H', '-o', FIELDS], stdout=tf)
                 tf.flush()
                 tf.seek(0)
                 dsinfostr = tf.read()
