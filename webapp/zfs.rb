@@ -335,7 +335,6 @@ post '/:host/datasets/:ds/?' do
     end
     if not @ds.saved? then
         puts "------- error saving #{@ds.name} -------"
-        puts "Checksum is #{@ds.checksum}"
         @ds.errors.each do |e|
             puts e.to_s
         end
