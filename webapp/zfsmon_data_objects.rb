@@ -226,10 +226,10 @@ class ZFSDataset
     property :sharesmb,         Boolean
 
     # Limits the amount of space a dataset can  consume.
-    property :refquota,         Integer, :min => 0
+    property :refquota,         Integer, :min => 0, :max => 9223372036854775808
 
     # The minimum amount of space guaranteed to a dataset, not including  its descendants.
-    property :refreserv,        Integer, :min => 0
+    property :refreserv,        Integer, :min => 0, :max => 9223372036854775808
 
     # Controls what is cached in the primary cache  (ARC).
     property :primarycache,     Enum[ :all, :none, :metadata ]

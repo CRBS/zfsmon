@@ -75,9 +75,9 @@ def main():
                 HOSTNAME = config.get('Network', 'hostname')
             if config.has_section('Parser'):
                 if config.has_option('Parser', 'pool_fields'):
-                    POOLFIELDS = config.get('ZFS', 'pool_fields')
+                    POOLFIELDS = config.get('Parser', 'pool_fields')
                 if config.has_option('Parser', 'ds_fields'):
-                    DSFIELDS = config.get('ZFS', 'ds_fields')
+                    DSFIELDS = config.get('Parser', 'ds_fields')
             else:
                 ZFS_LOG.error("Config file is missing the Parser section.")
                 sys.exit(1)
