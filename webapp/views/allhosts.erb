@@ -14,8 +14,8 @@
                     <li><a href="/<%= host.hostname %>/datasets">Datasets</a>: <%= host.datasets.count %></li>
                 </ul>
             </div>
-        <% if (index % 2 == 0) && (index > 0) %>
-            </div><div class="row"><div class="span4">
+        <% if ((index+1) % 2 == 0) && (index > 0) %>
+            </div><div class="row">
         <% end %>
     <% end %>
     </div>
