@@ -189,13 +189,16 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
     end
     @ds = ZUtil.get_ds_record @host, params[:ds]
     @snap = @ds.snapshots.first_or_create :dataset => @ds, :name => params[:snap]
+    # puts "For #{params[:snap]}"
     request.POST.each do |k, v|
+        # puts "before key: #{k} = #{v}"
         if not ZUtil::ZFS_DATASET_FIELDS.include? k
             next
         end
         if ZUtil::ZFS_DATASET_SIZE_FIELDS.include? k
             v = v.to_i
         end
+        next if not k.respond_to? 'to_sym'
         # ZFS returns 'on' and 'off' for certain fields but DM expects
         # boolean values. The unless block is to skip enums where 'on' or 'off' is a valid
         # identifier
@@ -220,6 +223,10 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
         if k == 'name'
             v.gsub! '/', '-'
         end
+
+        if k == 'normalization' and not v
+            v = :none
+        end
         
         if k == 'checksum' and v == 'on'
             v = 'auto'
@@ -239,6 +246,7 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
         if k == 'ratio'
             v = v[0..-1].to_f
         end
+        # puts "key: #{k} = #{v}"
         @snap.attribute_set k.to_sym, v
     end
     if @snap.dirty?
