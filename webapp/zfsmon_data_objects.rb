@@ -7,8 +7,8 @@ class ZFSHost
     property :hostname,         String, :required => true, :unique => true
     property :hostdescription,  Text
     property :lastupdate,       DateTime
-    has n, :pools,              :model => 'ZFSPool'
-    has n, :datasets,             :model => 'ZFSDataset'
+    has n, :pools,              :model => 'ZFSPool', :constraint => :destroy
+    has n, :datasets,             :model => 'ZFSDataset', :constraint => :destroy
     
     def activehosts
         all :lastupdate.gt => Time.now - (60 * 60 * 24), :order => [ :hostname.asc ]
@@ -103,7 +103,7 @@ class ZFSDataset
     property :id,               Serial
     property :lastupdate,       DateTime
     belongs_to :host,           :model => 'ZFSHost'
-    has n,    :snapshots,        :model => 'ZFSSnap'
+    has n,    :snapshots,        :model => 'ZFSSnap', :constraint => :destroy
 
     # The name of the mount
     property :name,             String, :required => true
