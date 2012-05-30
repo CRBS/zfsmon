@@ -165,7 +165,7 @@ class ZFSDataset
     property :checksum,         Enum[ :auto, :fletcher2, :fletcher4, :sha256, :sha256mac, :off ], :required => true, :default => :auto
 
     # Controls the compression algorithm used for this dataset.
-    property :compress,         Enum[ :lzjb, :gzip, :zle, :off ], :required => true, :default => :off
+    property :compress,         Enum[ :on, :lzjb, :gzip, :zle, :off ], :required => true, :default => :off
 
     # Controls whether the access time for  files  is  updated when they are read.
     property :atime,            Boolean, :default => true
@@ -370,7 +370,7 @@ class ZFSSnap
     property :mountpoint,       String, :required => false, :default => 'none'
 
     # Controls whether the file system is shared via NFS
-    property :sharenfs,         Boolean
+    property :sharenfs,         String, :required => false
 
     # Controls the checksum used to verify data integrity.
     property :checksum,         Enum[ :auto, :fletcher2, :fletcher4, :sha256, :sha256mac, :off ], :required => false
