@@ -188,7 +188,6 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
         host_not_found params[:host]
     end
     @ds = ZUtil.get_ds_record @host, params[:ds]
-    @ds.save unless @ds.saved?
     @snap = @ds.snapshots.first_or_create :dataset => @ds, :name => params[:snap]
     # puts "For #{params[:snap]}"
     request.POST.each do |k, v|

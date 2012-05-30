@@ -130,7 +130,7 @@ def main():
         s.update(HOSTNAME + dataset.properties['name'] + "ds")
         dataset.properties['dsuniqueid'] = s.hexdigest()
     
-    snapshots = get_snapshots()
+    snapshots = get_snapshots(DSFIELDS)
     for snap in snapshots:
         snap.properties['name'] = snap.properties['name'].replace('/', '-')
         snap.snapped_ds_name = snap.properties['name'].partition('@')[0]
@@ -262,11 +262,11 @@ def get_datasets(FIELDS='all'):
         dsobjs.append(ZMount(dsstr))
     return dsobjs
 
-def get_snapshots():
+def get_snapshots(FIELDS='all'):
     """ Gets the snapshot history for each filesystem. """
     try:
         with tempfile.TemporaryFile() as tf:
-                subprocess.check_call(['zfs', 'list', '-t', 'snapshot', '-o', 'all', '-H'], stdout=tf)
+                subprocess.check_call(['zfs', 'list', '-t', 'snapshot', '-o', FIELDS, '-H'], stdout=tf)
                 tf.flush()
                 tf.seek(0)
                 snapinfostr = tf.read()
