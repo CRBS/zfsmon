@@ -121,7 +121,7 @@ module ZUtil
                         'primarycache', 'secondarycache', 'logbias', 'dedup', 'sync',
                         'crypt', 'keysourceformat', 'keysourcelocation', 'keystatus']
                         
-    ZFS_STUPID_BOOLEAN_FIELDS = ['setuid', 'sharenfs', 'sharesmb', 'zoned', 'utf8only', 'xattr', 'atime',
+    ZFS_STUPID_BOOLEAN_FIELDS = ['setuid', 'sharesmb', 'zoned', 'utf8only', 'xattr', 'atime',
                                   'mounted', 'exec', 'vscan', 'defer_destroy', 'nbmand',
                                   'devices', 'rstchown']
     
