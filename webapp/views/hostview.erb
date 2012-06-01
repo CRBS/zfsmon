@@ -8,6 +8,10 @@
         <p><%= @host.hostdescription %></p>
         <p><strong>Last update:</strong> <%= @host.lastupdate.strftime format='%A, %B %d, %Y at %l:%M %P ' %></p>
     </div>
+    <form action="/<%= @host.hostname %>" method="post">
+        <input type="hidden" name="_method" value="delete">
+        <input type="submit" value="Delete Host" class="btn btn-danger">
+    </form>
 </div>
 
 <hr />

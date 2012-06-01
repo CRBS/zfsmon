@@ -13,8 +13,8 @@ class AbstractZFS(object):
     name is a unique name for the mount or pool, and has forward slashes
     escaped to hyphens so that it can be used as part of a URL. """
 
-    def __init__(self, properties):
-        self.properties = self.property_parse(properties)
+    def __init__(self, properties, fields=None):
+        self.properties = self.property_parse(properties, fields)
         self.properties['name'] = self.properties['name'].replace('/', '-')
         self.name = quote( self.properties['name'] )
 
@@ -22,7 +22,7 @@ class AbstractZFS(object):
         return self.name + " " + str(self.properties)
 
     @staticmethod
-    def property_parse(properties):
+    def property_parse(properties, fields=None):
         pass
 
     @staticmethod

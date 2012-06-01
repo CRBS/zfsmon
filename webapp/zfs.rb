@@ -195,10 +195,17 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
         if not ZUtil::ZFS_DATASET_FIELDS.include? k
             next
         end
+        
+        # Just skip these fields. They are not well-defined for snapshots and cause problems.
+        if ['copies', 'utf8only', 'case', 'vscan', 'primarycache', 'userrefs', 'logbias', 'crypt', 'rekeydate'].include? k
+            next
+        end
+        
         if ZUtil::ZFS_DATASET_SIZE_FIELDS.include? k
             v = v.to_i
         end
-        next if not k.respond_to? 'to_sym'
+        
+
         # ZFS returns 'on' and 'off' for certain fields but DM expects
         # boolean values. The unless block is to skip enums where 'on' or 'off' is a valid
         # identifier
@@ -338,5 +345,29 @@ post '/:host/datasets/:ds/?' do
         @ds.errors.each do |e|
             puts e.to_s
         end
+    end
+end
+    
+# DELETE methods 
+delete '/:host/?' do
+    host = ZUtil.get_host_record params[:host]
+    if not host
+        host_not_found params[:host]
+    end
+    
+    host.pools.destroy
+    host.datasets.destroy
+    host.destroy
+
+    if host.destroyed?
+        redirect '/'
+    else    
+        status 503
+        str = 'An error was encountered attempting to delete ' + params[:host]
+        str << '\n' 
+        host.errors.each do |e|
+            str << e + '\n'
+        end     
+        str     
     end
 end

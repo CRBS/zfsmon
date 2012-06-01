@@ -3,7 +3,7 @@
 from zfsmond.abstractzfs import AbstractZFS
 import logging
 class ZMount(AbstractZFS):
-    def __init__(self, properties, snapshot=False):
+    def __init__(self, properties, snapshot=False, fields=None):
         if snapshot:
             # Sun inexplicably switched the last three columns around 
             # when calling `zfs list -t snapshot -o all` versus
@@ -11,14 +11,14 @@ class ZMount(AbstractZFS):
             # in those columns anyways, so just ditch the extra one
             # so that property_parse() can parse it.
             pwtf = properties.split('\t')
-            properties = '\t'.join(pwtf[:-2])
-        super(ZMount, self).__init__(properties)
+            properties = '\t'.join(pwtf[:-1])
+        super(ZMount, self).__init__(properties, fields)
 
     @staticmethod
-    def property_parse(properties):
+    def property_parse(properties, fields=None):
         """ Parses properties into ZMount property key-value pairs, using the
         default fields from `zfs list -H -o all`. Returns the parsed dict. """
-        # Split about 8 spaces (used to separate columns in `zfs list`'s output)
+        # Split about tabs (used to separate columns in `zfs list`'s output)
         proplist = properties.split('\t')
 
         log = logging.getLogger("zfsmond")
@@ -26,7 +26,15 @@ class ZMount(AbstractZFS):
         
         # Note that the order of this array matters. `zfs -H` prints without headers,
         # so we will parse in this order the tab-separated info from zfs
-        ZFS_LIST_FIELDS = ['name', 'type', 'creation', 'used', 'avail', 'refer', 
+        if fields:
+            # fields is a comma separated string?
+            if hasattr(fields, 'split'):
+                ZFS_LIST_FIELDS = fields.split(',')
+            # fields is already a list?
+            else:
+                ZFS_LIST_FIELDS = fields
+        else:
+            ZFS_LIST_FIELDS = ['name', 'type', 'creation', 'used', 'avail', 'refer', 
                         'ratio', 'mounted', 'origin', 'quota', 'reserv', 'volsize', 
                         'volblock', 'recsize', 'mountpoint', 'sharenfs', 'checksum',
                         'compress', 'atime', 'devices', 'exec', 'setuid', 'rdonly', 

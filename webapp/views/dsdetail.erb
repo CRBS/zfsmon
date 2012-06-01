@@ -90,7 +90,7 @@ table.fixed {
         <table class="table-striped fixed">
             <tr title="<%= ZUtil.get_desc :ds, 'sharenfs' %>">
                 <td><strong>Shared via NFS?</strong></td>
-                <td><span class="label <%= @ds.sharenfs ? 'label-info' : '' %>"><%= @ds.sharenfs ? 'yes' : 'no' %></span></td>
+                <td><span class="label <%= @ds.sharenfs ? 'label-info' : '' %>"><%= @ds.sharenfs %></span></td>
             </tr>
             <tr title="<%= ZUtil.get_desc :ds, 'sharesmb' %>">
                 <td><strong>Shared via SMB?</strong></td>
