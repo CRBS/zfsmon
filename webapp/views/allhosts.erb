@@ -1,17 +1,20 @@
 <% if @allhosts then %>
     <div class="row">
     <% @allhosts.each_with_index do |host, index| %>
-            <div class="span4 well" 
+            <div class="span4 well" style="height: 100%; 
             <% host.pools.each do |p| %>
                 <% case p.health; when :degraded %>
-                    style="background-color: #FD8B15"
+                    background-color: #FF9D27"
                     <% break %>
                 <% when :faulted %>
-                    style="background-color: #FF3F00"
+                    style="background-color: #FF8F50"
+                    <% break %>
+                <% when :unavail %>
+                    style="background-color: #6F6F6F; color: #FFFFFF"
                     <% break %>
                 <% end %>
             <% end %>>
-                <% if host.lastupdate < (DateTime.now - (60 * 60 * 24)) then %>
+                <% if host.lastupdate < (Time.now - (60 * 60 * 24)) then %>
                         <div class="alert-info">
                             <strong>Warning:</strong> This host has not checked in recently.
                         </div>
@@ -22,6 +25,7 @@
                     <li><a href="/<%= host.hostname %>/pools">Pools</a>: <%= host.pools.count %></li>
                     <li><a href="/<%= host.hostname %>/datasets">Datasets</a>: <%= host.datasets.count %></li>
                 </ul>
+                <p><strong>Last update:</strong> <%= @host.lastupdate.strftime format='%A, %B %d, %Y at %l:%M %P ' %></p>
             </div>
         <% if ((index+1) % 2 == 0) && (index > 0) %>
             </div><div class="row">

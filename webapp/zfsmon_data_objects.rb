@@ -44,7 +44,7 @@ class ZFSPool
     property :altroot,          String, :default => '-'
     
     # Health can be 'online', 'degraded', or 'faulted'. See zpool man page for details.
-    property :health,           Enum[ :online, :degraded, :faulted], :required => true
+    property :health,           Enum[ :online, :degraded, :faulted, :unavail ], :required => true
 
     # Unique identifier for this pool
     property :guid,             String, :required => true, :unique => true
@@ -159,7 +159,7 @@ class ZFSDataset
     property :mountpoint,       String, :required => true, :default => 'none'
 
     # Controls whether the file system is shared via NFS
-    property :sharenfs,         Boolean
+    property :sharenfs,         String, :required => false
 
     # Controls the checksum used to verify data integrity.
     property :checksum,         Enum[ :auto, :fletcher2, :fletcher4, :sha256, :sha256mac, :off ], :required => true, :default => :auto
