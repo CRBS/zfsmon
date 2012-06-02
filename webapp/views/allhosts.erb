@@ -25,7 +25,7 @@
                     <li><a href="/<%= host.hostname %>/pools">Pools</a>: <%= host.pools.count %></li>
                     <li><a href="/<%= host.hostname %>/datasets">Datasets</a>: <%= host.datasets.count %></li>
                 </ul>
-                <p><strong>Last update:</strong> <%= @host.lastupdate.strftime format='%A, %B %d, %Y at %l:%M %P ' %></p>
+                <p><strong>Last update:</strong> <%= host.lastupdate.strftime format='%A, %B %d, %Y at %l:%M %P ' %></p>
             </div>
         <% if ((index+1) % 2 == 0) && (index > 0) %>
             </div><div class="row">
