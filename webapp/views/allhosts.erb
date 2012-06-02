@@ -14,7 +14,7 @@
                     <% break %>
                 <% end %>
             <% end %>>
-                <% if host.lastupdate < (Time.now - (60 * 60 * 24)) then %>
+                <% if host.lastupdate < (DateTime.now - (60 * 60 * 24)) then %>
                         <div class="alert-info">
                             <strong>Warning:</strong> This host has not checked in recently.
                         </div>
