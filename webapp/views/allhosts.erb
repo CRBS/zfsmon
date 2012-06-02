@@ -1,3 +1,10 @@
+<script type="application/javascript">
+    $(document).ready(function() {
+        $('.well').css({
+            'height': $('.well').height()
+            });
+        });
+</script>
 <% if @allhosts then %>
     <div class="row">
     <% @allhosts.each_with_index do |host, index| %>
@@ -5,13 +12,12 @@
             <% host.pools.each do |p| %>
                 <% case p.health; when :degraded %>
                     background-color: #FF9D27"
-                    <% break %>
                 <% when :faulted %>
-                    style="background-color: #FF8F50"
-                    <% break %>
+                    background-color: #FF8F50"
                 <% when :unavail %>
-                    style="background-color: #6F6F6F; color: #FFFFFF"
-                    <% break %>
+                    background-color: #6F6F6F; color: #FFFFFF"
+                <% else %>
+                    "
                 <% end %>
             <% end %>>
                 <% if host.lastupdate < (DateTime.now - (60 * 60 * 24)) then %>
