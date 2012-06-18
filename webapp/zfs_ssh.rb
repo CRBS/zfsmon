@@ -17,20 +17,19 @@ class ZSSH
   end
 
   def request_update
-    return false if not @session
     @session.exec! "/usr/bin/updater.py"
-    true
   end
 
   def create_snapshot(dataset, options={})
     options[:name] ||= Time.now.strftime "%Y%m%d-%H%M%S"
-    options[:name] = options[:name].gsub(/[^0-9A-Za-z\-]/i, '')[0..25]
+    options[:name] = options[:name].gsub(/[^0-9A-Za-z\-]/, '')[0..25]
     snapcmd = "/usr/bin/sudo /usr/sbin/zfs snapshot #{dataset.name.sub(/-/, '/')}@#{options[:name]}" 
     snapoutput = @session.exec! snapcmd do |ch, stream, data|
       if stream == :stderr
         raise StandardError.new(data)
       end
     end
+    request_update
   end
   
   def close

@@ -23,7 +23,12 @@
           <label for="ssh_user">SSH Username</label>
           <input type="text" name="ssh_user"<%= %[ value="#{@host.ssh_user}"] if @host.ssh_user %> />
           <label for="ssh_key">SSH Private Key (PEM format)</label>
-          <textarea style="width: 95%;" name="ssh_key" rows="8"><%= @host.ssh_key if @host.ssh_key %></textarea>
+          <% if @host.ssh_key %>
+            <p id="privkey-edit">Hidden. <a href="#" onClick="$('#privkey-text').show()">Click here</a> to replace.</p>
+            <textarea id="privkey-textarea" style="width: 95%; display: none;" name="ssh_key" rows="8"></textarea>
+          <% else %>
+            <textarea id="privkey-textarea" style="width: 95%;" name="ssh_key" rows="8"></textarea>
+          <% end %>
           <input type="submit" class="btn btn-primary" value="Save changes" />
         </fieldset>
       </form>

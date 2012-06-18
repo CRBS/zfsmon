@@ -11,11 +11,6 @@ require "#{File.dirname(__FILE__)}/zfs_ssh"
 
 DataMapper.finalize.auto_upgrade!
 
-use Rack::Auth::Basic, "ZFS Monitor v0.2" do |user, pass|
-  auth = YAML::load(IO.read(File.join(File.dirname(__FILE__), 'auth.yml')))
-  return true if auth.include? user && auth[user] == pass
-end
-
 set :environment, :production
 configure do
     enable :static
@@ -28,11 +23,27 @@ helpers do
         status 404
         "The provided host ID or hostname " + request.to_s + " could not be found in the database."
     end
+    
     def pool_not_found( request="" )
         status 404
         "The provided pool ID or name " + request.to_s + " could not be found in the database."
     end
+    
+    def protected!
+        unless authorized?
+          response['WWW-Authenticate'] = %(Basic realm="ZFS Monitor v0.2")
+          throw :halt, [401, "Not authorized\n"]
+        end
+    end
+
+    def authorized?
+        authorized = YAML::load(IO.read(File.join(File.dirname(__FILE__), 'auth.yml')))
+        @auth ||= Rack::Auth::Basic::Request.new(request.env)
+        valid = @auth.provided? && @auth.basic? && @auth.credentials && authorized.include?(@auth.credentials[0])
+        valid && authorized[@auth.credentials[0]] == @auth.credentials[1]
+    end
 end
+
 get '/' do
     @allhosts = ZFSHost.all :order => [ :hostname.asc ]
     @title = 'All Hosts'
@@ -52,6 +63,7 @@ get '/:host/?' do
 end
 
 put '/:host' do
+    protected!
     @host = ZUtil.get_host_record params[:host]
     if not @host
       host_not_found params[:host]
@@ -114,6 +126,7 @@ post '/:host/pools/:pool/?' do
     end
 
     @pool = ZUtil.get_pool_record @host, params[:pool]
+    puts "Processing pool updates from #{@host.hostname}"
     request.POST.each do |k, v|
         if not ZUtil::ZFS_POOL_FIELDS.include? k
             next
@@ -151,7 +164,7 @@ post '/:host/pools/:pool/?' do
             if k == 'dedup'
                 v = v[0..-1].to_f
             end
-            if v == '-' and not ZUtil::ZFS_POOL_SIZE_FIELDS.include? k
+            if v == '-' && !(ZUtil::ZFS_POOL_SIZE_FIELDS.include? k)
                 next
             end
             @pool.attribute_set k.to_sym, v
@@ -202,6 +215,7 @@ get '/:host/datasets/:ds/snapshots/?' do
 end
 
 post '/:host/datasets/:ds/snapshot' do
+    protected!
     @host = ZUtil.get_host_record params[:host]
     if not @host
       host_not_found params[:host]
@@ -229,15 +243,15 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
     end
     @ds = ZUtil.get_ds_record @host, params[:ds]
     @snap = @ds.snapshots.first_or_create :dataset => @ds, :name => params[:snap]
-    # puts "For #{params[:snap]}"
+    puts "For #{params[:snap]}"
     request.POST.each do |k, v|
-        # puts "before key: #{k} = #{v}"
+        puts "before key: #{k} = #{v}"
         if not ZUtil::ZFS_DATASET_FIELDS.include? k
             next
         end
         
         # Just skip these fields. They are not well-defined for snapshots and cause problems.
-        if ['copies', 'utf8only', 'case', 'vscan', 'primarycache', 'userrefs', 'logbias', 'crypt', 'rekeydate'].include? k
+        if ['copies', 'utf8only', 'case', 'vscan', 'primarycache', 'userrefs', 'logbias', 'crypt', 'rekeydate', 'atime', 'zoned', 'sharesmb'].include? k
             next
         end
         
@@ -271,21 +285,21 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
             v.gsub! '/', '-'
         end
 
-        if k == 'normalization' and not v
+        if k == 'normalization' && !v
             v = :none
         end
         
-        if k == 'checksum' and v == 'on'
+        if k == 'checksum' && v == 'on'
             v = 'auto'
         end
         
-        if ['canmount', 'snapdir', 'case', 'aclinherit', 'normalization'].include? k and v == '-'
+        if ['canmount', 'snapdir', 'case', 'aclinherit', 'normalization'].include? k && v == '-'
             v = 'na'
         end
         
         # Fields that only apply to filesystems... leave nil if '-'
         if ['userrefs', 'version', 'rekeydate', 'volsize', 
-            'checksum', 'compress', 'rdonly', 'copies', 'logbias', 'dedup', 'sync'].include? k and v == '-'
+            'checksum', 'compress', 'rdonly', 'copies', 'logbias', 'dedup', 'sync'].include? k && v == '-'
             next
         end
         
@@ -293,7 +307,7 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
         if k == 'ratio'
             v = v[0..-1].to_f
         end
-        # puts "key: #{k} = #{v}"
+        puts "key: #{k} = #{v}"
         @snap.attribute_set k.to_sym, v
     end
     if @snap.dirty?
@@ -390,6 +404,7 @@ end
     
 # DELETE methods 
 delete '/:host/?' do
+    protected!
     host = ZUtil.get_host_record params[:host]
     if not host
         host_not_found params[:host]
