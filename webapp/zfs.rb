@@ -298,7 +298,7 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
         end
         
         # Fields that only apply to filesystems... leave nil if '-'
-        if ['userrefs', 'version', 'rekeydate', 'volsize', 
+        if ['defer_destroy', 'userrefs', 'version', 'rekeydate', 'volsize', 
             'checksum', 'compress', 'rdonly', 'copies', 'logbias', 'dedup', 'sync'].include? k && v == '-'
             next
         end
@@ -377,7 +377,7 @@ post '/:host/datasets/:ds/?' do
             end
             
             # Fields that only apply to filesystems... leave nil if '-'
-            if ['userrefs', 'version', 'rekeydate', 'volsize'].include? k and v == '-'
+            if ['userrefs', 'version', 'rekeydate', 'volsize', 'defer_destroy'].include? k and v == '-'
                 next
             end
             
