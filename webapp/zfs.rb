@@ -11,7 +11,12 @@ require "#{File.dirname(__FILE__)}/zfs_ssh"
 
 DataMapper.finalize.auto_upgrade!
 
-# set :environment, :production
+use Rack::Auth::Basic, "ZFS Monitor v0.2" do |user, pass|
+  auth = YAML::load(IO.read(File.join(File.dirname(__FILE__), 'auth.yml')))
+  return true if auth.include? user && auth[user] == pass
+end
+
+set :environment, :production
 configure do
     enable :static
 end
