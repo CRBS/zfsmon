@@ -10,6 +10,7 @@ require "#{File.dirname(__FILE__)}/zfs_utils"
 
 DataMapper.finalize.auto_upgrade!
 
+set :environment, :production
 configure do
     enable :static
 end

@@ -44,7 +44,7 @@ class ZFSPool
     property :altroot,          String, :default => '-'
     
     # Health can be 'online', 'degraded', or 'faulted'. See zpool man page for details.
-    property :health,           Enum[ :online, :degraded, :faulted], :required => true
+    property :health,           Enum[ :online, :degraded, :faulted, :unavail ], :required => true
 
     # Unique identifier for this pool
     property :guid,             String, :required => true, :unique => true
