@@ -159,7 +159,7 @@ class ZFSDataset
     property :mountpoint,       String, :required => true, :default => 'none'
 
     # Controls whether the file system is shared via NFS
-    property :sharenfs,         Boolean
+    property :sharenfs,         String, :required => false, :length => 150
 
     # Controls the checksum used to verify data integrity.
     property :checksum,         Enum[ :auto, :fletcher2, :fletcher4, :sha256, :sha256mac, :off ], :required => true, :default => :auto
@@ -370,7 +370,7 @@ class ZFSSnap
     property :mountpoint,       String, :required => false, :default => 'none'
 
     # Controls whether the file system is shared via NFS
-    property :sharenfs,         String, :required => false
+    property :sharenfs,         String, :required => false, :length => 150
 
     # Controls the checksum used to verify data integrity.
     property :checksum,         Enum[ :auto, :fletcher2, :fletcher4, :sha256, :sha256mac, :off ], :required => false
