@@ -7,10 +7,11 @@ DataMapper.setup(:default, "sqlite3://#{Dir.pwd}/zfsdata.db")
 
 require "#{File.dirname(__FILE__)}/zfsmon_data_objects"
 require "#{File.dirname(__FILE__)}/zfs_utils"
+require "#{File.dirname(__FILE__)}/zfs_ssh"
 
 DataMapper.finalize.auto_upgrade!
 
-set :environment, :production
+# set :environment, :production
 configure do
     enable :static
 end
@@ -42,6 +43,18 @@ get '/:host/?' do
         erb :hostview
     else
         host_not_found params[:host]
+    end
+end
+
+put '/:host' do
+    @host = ZUtil.get_host_record params[:host]
+    if not @host
+      host_not_found params[:host]
+    end
+    if @host.update :ssh_user => params[:ssh_user], :ssh_key => params[:ssh_key] #.gsub(/\p{Space}/, '')
+      redirect "/#{params[:host]}"
+    else
+      "There was a problem updating #{params[:host]}."
     end
 end
 
@@ -183,6 +196,27 @@ get '/:host/datasets/:ds/snapshots/?' do
     redirect '/'
 end
 
+post '/:host/datasets/:ds/snapshot' do
+    @host = ZUtil.get_host_record params[:host]
+    if not @host
+      host_not_found params[:host]
+    end
+    @ds = ZUtil.get_ds_record @host, params[:ds]
+    begin
+      ssh = ZSSH.new @host
+      name = params[:snapshot_name].empty? ? nil : params[:snapshot_name]
+      ssh.create_snapshot @ds, :name => name
+      ssh.request_update
+      ssh.close
+      redirect "/#{@host.hostname}/datasets/#{@ds.name}"
+    rescue Exception => e
+      puts "User: #{@host.ssh_user}"
+      puts "Key: #{@host.ssh_key}"
+      "Unable to create a snapshot of #{@ds.name} on #{@host.hostname}.\n#{e.message}"
+      raise e
+    end
+end
+
 post '/:host/datasets/:ds/snapshots/:snap/?' do
     @host = ZUtil.get_host_record params[:host]
     if not @host
@@ -220,7 +254,7 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
         
         # Some fields say that they are 'on' or 'off' in the docs but inexplicably
         # print a '-' instead of off
-        if ZUtil::ZFS_STUPID_BOOLEAN_FIELDS.include? k and v == '-'
+        if ZUtil::ZFS_STUPID_BOOLEAN_FIELDS.include? k && v == '-'
                 v = false
         end
         
@@ -303,7 +337,7 @@ post '/:host/datasets/:ds/?' do
             
             # Some fields say that they are 'on' or 'off' in the docs but inexplicably
             # print a '-' instead of off
-            if ZUtil::ZFS_STUPID_BOOLEAN_FIELDS.include? k and v == '-'
+            if ZUtil::ZFS_STUPID_BOOLEAN_FIELDS.include? k && v == '-'
                     v = false
             end
             
@@ -365,9 +399,9 @@ delete '/:host/?' do
     else    
         status 503
         str = 'An error was encountered attempting to delete ' + params[:host]
-        str << '\n' 
+        str << "\n" 
         host.errors.each do |e|
-            str << e + '\n'
+            str << e + "\n"
         end     
         str     
     end

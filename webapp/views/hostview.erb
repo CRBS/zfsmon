@@ -13,7 +13,24 @@
         <input type="submit" value="Delete Host" class="btn btn-danger">
     </form>
 </div>
-
+<div class="row">
+  <div class="span6">
+    <h3><a href="#" data-toggle="collapse" data-target="#ssh-settings">SSH Settings</a></h3>
+    <div id="ssh-settings" class="collapse<%= ' in' if @host.ssh_user %>">&nbsp;
+      <form action="<%= "/#{@host.hostname}" %>" method="post">
+        <fieldset>
+          <input type="hidden" name="_method" value="put" />
+          <label for="ssh_user">SSH Username</label>
+          <input type="text" name="ssh_user"<%= %[ value="#{@host.ssh_user}"] if @host.ssh_user %> />
+          <label for="ssh_key">SSH Private Key (PEM format)</label>
+          <textarea style="width: 95%;" name="ssh_key" rows="8"><%= @host.ssh_key if @host.ssh_key %></textarea>
+          <input type="submit" class="btn btn-primary" value="Save changes" />
+        </fieldset>
+      </form>
+    </div>
+  </div>
+</div>
+    
 <hr />
 
 <div class="row">
@@ -88,3 +105,6 @@
     <% end %>
 <% end %>
 </div>
+<script type="application/javascript">
+  $(".collapse").collapse();
+</script>

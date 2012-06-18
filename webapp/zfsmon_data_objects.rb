@@ -7,6 +7,8 @@ class ZFSHost
     property :hostname,         String, :required => true, :unique => true
     property :hostdescription,  Text
     property :lastupdate,       DateTime
+    property :ssh_user,         String
+    property :ssh_key,          Text
     has n, :pools,              :model => 'ZFSPool', :constraint => :destroy
     has n, :datasets,             :model => 'ZFSDataset', :constraint => :destroy
     

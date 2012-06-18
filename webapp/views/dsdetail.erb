@@ -109,11 +109,20 @@ table.fixed {
                         <td><%= ZUtil.convert_human_bytes snap.used %></td>
                     </tr>
                 <% end %>
-            </table>&nbsp;
+            </table>
         <% else %>
-            <p>This dataset currently has no snapshots saved.</p>&nbsp;
+            <p>This dataset currently has no snapshots saved.</p>
         <% end %>
-        
+        <button class="btn" data-toggle="collapse" data-target="#newsnap">Take New</button>&nbsp;
+        <div id="newsnap" class="collapse in">&nbsp;
+          <form action="<%= "/#{@host.hostname}/datasets/#{@ds.name}/snapshot" %>" method="post">
+            <fieldset>
+              <input type="text" name="snapshot_name" placeholder="Snapshot Name (optional)" />&nbsp;
+              <input type="submit" class="btn btn-primary btn-small" value="Take snapshot" />
+            </fieldset>
+          </form>
+        </div>&nbsp;
+            
         <h3>Properties</h3>
         <table class="table-striped sortable fixed">
             <tr><th>Property</th><th>Value</th></tr>
@@ -320,6 +329,6 @@ table.fixed {
         </table>
     </div>
 </div>
-
-
-
+<script type="application/javascript">
+  $(".collapse").collapse();
+</script>
