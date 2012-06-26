@@ -15,9 +15,8 @@ import hashlib
 import ConfigParser as configparser
 from urllib2 import quote
 
+import zfsmond
 
-from zfsmond.zpool import ZPool
-from zfsmond.zmount import ZMount
 ZFSMON_SERVER = "http://" + "127.0.0.1:4567"
 HOSTNAME = socket.gethostname()
 def main():
@@ -73,14 +72,6 @@ def main():
                     ZFSMON_SERVER = ZFSMON_SERVER[:-1]
             if config.has_option('Network', 'hostname'):
                 HOSTNAME = config.get('Network', 'hostname')
-            if config.has_section('Parser'):
-                if config.has_option('Parser', 'pool_fields'):
-                    POOLFIELDS = config.get('Parser', 'pool_fields')
-                if config.has_option('Parser', 'ds_fields'):
-                    DSFIELDS = config.get('Parser', 'ds_fields')
-            else:
-                ZFS_LOG.error("Config file is missing the Parser section.")
-                sys.exit(1)
     
     # Set server after parsing if it was passed in as a command line option
     if zfsmon_server_cli_arg: ZFSMON_SERVER = zfsmon_server_cli_arg
@@ -99,8 +90,7 @@ def main():
         except subprocess.CalledProcessError as e:
             ZFS_LOG.error("uname called failed: " + str(e))
         
-        r = requests.post( ZFSMON_SERVER + "/" + HOSTNAME,
-                          data=hostdata )
+        r = requests.post( ZFSMON_SERVER + "/" + HOSTNAME, data=hostdata )
         if r.status_code / 100 != 2:
             ZFS_LOG.error('An HTTP {0} error was encountered when creating a new host on {1}. '.format(str(r.status_code), ZFSMON_SERVER) + 
                            'The server replied with this: {0}'.format(r.text))
@@ -226,59 +216,59 @@ def post_snapshot(snap, hostname, server):
 def get_pools():
     """ Gets the active ZFS pools by calling `zpool list` and parsing the output. Returns a list of ZPool objects
         populated with the properties returned by zpool list -H -o all. """
-    try:
-        with tempfile.TemporaryFile() as tf:
-                # Call `zpool list` with -H to not pretty-print the output (no header)
-                subprocess.check_call(['zpool', 'list', '-H', '-o', 'all'], stdout=tf)
-                tf.flush()
-                tf.seek(0)
-                poolinfostr = tf.read()
-    except subprocess.CalledProcessError as e:
-        log = logging.getLogger("zfsmond")
-        log.error("The call to `zpool list` failed. Info: " + str(e))
-        return []
+    poolinfostr = fork_and_get_output("zpool list -H -o all".split())
+    header = get_zpool_header()
     poolinfo = poolinfostr.splitlines()
     poolobjs = []
     for poolstr in poolinfo:
-        poolobjs.append(ZPool(poolstr))
+        poolobjs.append(DataZFS(poolstr, header, 'pool'))
     return poolobjs
 
 def get_datasets(FIELDS='all'):
     """ Gets the active ZFS mounted filesystems by calling `zfs list` and parsing the output. """
-    try:
-        with tempfile.TemporaryFile() as tf:
-                # Call `zfs list` with -H to suppress pretty-print and header row
-                subprocess.check_call(['zfs', 'list', '-H', '-o', FIELDS], stdout=tf)
-                tf.flush()
-                tf.seek(0)
-                dsinfostr = tf.read()
-    except subprocess.CalledProcessError as e:
-        log = logging.getLogger("zfsmond")
-        log.error("The call to `zfs list` failed. Info: " + str(e))
-        return []
+    dsinfostr = fork_and_get_output("zfs list -H -o {0}".format(FIELDS).split())
+    header = get_zfs_ds_header()
     dsinfo = dsinfostr.splitlines()
     dsobjs = []
     for dsstr in dsinfo:
-        dsobjs.append(ZMount(dsstr))
+        dsobjs.append(DataZFS(dsstr, header, 'dataset'))
     return dsobjs
 
 def get_snapshots(FIELDS='all'):
     """ Gets the snapshot history for each filesystem. """
-    try:
-        with tempfile.TemporaryFile() as tf:
-                subprocess.check_call(['zfs', 'list', '-t', 'snapshot', '-o', FIELDS, '-H'], stdout=tf)
-                tf.flush()
-                tf.seek(0)
-                snapinfostr = tf.read()
-    except subprocess.CalledProcessError as e:
-        log = logging.getLogger("zfsmond")
-        log.error("The call to `zfs list -t snapshot` failed. Info: " + str(e))
-        return []
+    snainfostr = fork_and_get_output("zfs list -t snapshot -H -o {0}".format(FIELDS).split())
+    header = get_zfs_snap_header()
     snapinfo = snapinfostr.splitlines()
     snapobjs = []
     for snapstr in snapinfo:
-        snapobjs.append(ZMount(snapstr, True))
+        snapobjs.append(DataZFS(snapstr, header, 'snapshot'))
     return snapobjs
+
+def get_zpool_header():
+    out = fork_and_get_output("zpool list -o all".split())
+    return out.split('\n')[0].strip()
+
+def get_zfs_ds_header():
+    out = fork_and_get_output("zfs list -o all".split())
+    return out.split('\n')[0].strip()
+
+def get_zfs_snap_header():
+    out = fork_and_get_output("zfs list -t snapshot -o all".split())
+    return out.split('\n')[0].strip()
+    
+def fork_and_get_output(cmd):
+    try:
+        with tempfile.TemporaryFile() as tf:
+            subprocess.check_call(cmd, stdout=tf)
+            tf.flush()
+            tf.seek(0)
+            out = tf.read()
+    except subprocess.CalledProcessError as e:
+        log = logging.getLogger('zfsmond')
+        log.error('The call to `{0}` failed. Info: {1}'.format(" ".join(cmd),
+                                                               str(e))
+        return None
+    return out
 
 if __name__ == "__main__":
     main()
