@@ -48,8 +48,8 @@ class DataZFS(object):
                 try:
                     prop_hash[key] = AbstractZFS.parse_size(prop_hash[key])
                 except ValueError as e:
-                    log.warning("{0} -> {1} could not be " +
-                                "parsed as a size in bytes.".format(key, prop_hash[key]))
+                    log.warning("{0} -> {1} could not be ".format(key, prop_hash[key])) +
+                                "parsed as a size in bytes."
             if prop_hash[key] == '-':
                 del prop_hash[key]
         return prop_hash
