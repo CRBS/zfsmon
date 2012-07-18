@@ -2,14 +2,14 @@
 from setuptools import setup
 
 setup( name = 'zfsmond',
-       version = '0.2.0',
+       version = '0.2.1',
        description = 'ZFS Monitoring Script',
        author = 'Jenner LaFave',
        author_email = 'jlafave@ucsd.edu',
        url = 'http://crbs.ucsd.edu',
        license = 'MIT Expat License',
-       packages = ['zfsmond'],
+       py_modules = ['datazfs'],
        requires = ['requests'],
-       scripts = ['zfsmond/updater.py'],
+       scripts = ['updater.py'],
        data_files = [('/etc', ['zfsmond.conf'])]
        )
