@@ -135,7 +135,6 @@ post '/:host/pools/:pool/?' do
     end
 
     @pool = ZUtil.get_pool_record @host, params[:pool]
-    puts "Processing pool updates from #{@host.hostname}"
     request.POST.each do |k, v|
         if not ZUtil::ZFS_POOL_FIELDS.include? k
             next
