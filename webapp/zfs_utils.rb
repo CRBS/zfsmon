@@ -161,7 +161,10 @@ module ZUtil
     end
     
     def ZUtil.get_pool_record( hostrec, pool )
-        hostrec.pools.first_or_create :host => hostrec, :name => pool
+        if hostrec
+          hostrec.pools.first_or_create :host => hostrec, :name => pool
+        else
+          nil
     end
     
     def ZUtil.get_ds_record( hostrec, filesystem )
