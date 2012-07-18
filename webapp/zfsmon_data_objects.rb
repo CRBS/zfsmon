@@ -12,11 +12,11 @@ class ZFSHost
     has n, :pools,              :model => 'ZFSPool', :constraint => :destroy
     has n, :datasets,             :model => 'ZFSDataset', :constraint => :destroy
     
-    def activehosts
+    def self.activehosts
         all :lastupdate.gt => Time.now - (60 * 60 * 24), :order => [ :hostname.asc ]
     end
     
-    def stalehosts
+    def self.stalehosts
         all :lastupdate.lte => Time.now - (60 * 60 * 24), :order => [ :hostname.asc ]
     end
 
@@ -188,11 +188,11 @@ class ZFSDataset
     property :zoned,            Boolean
 
     # Controls whether the .zfs directory is hidden or visible
-    property :snapdir,          Enum[ :hidden, :visible, :na ], :required => true
+    property :snapdir,          Enum[ :hidden, :visible, :na ], :default => :na
 
     # Controls how ACL entries are inherited  when  files  and
     # directories are created. See man page for more info.
-    property :aclinherit,       Enum[ :discard, :noallow, :restricted, :passthrough, :passthroughx, :na ], :required => true
+    property :aclinherit,       Enum[ :discard, :noallow, :restricted, :passthrough, :passthroughx, :na ], :default => :na
 
     # Controls whether this filesystem can be mounted.
     property :canmount,         Enum[ :on, :off, :noauto, :na ]
@@ -309,8 +309,22 @@ class ZFSDataset
     end
     
     def is_mounted?
-        @type == :filesystem and @mounted
+        @type == :filesystem && @mounted
     end
+
+    def last_snapshot
+      self.snapshots.first :order => [:creation.desc]
+    end
+    alias :last_snap :last_snapshot
+    
+    def last_snapshot_time
+      if last_snapshot
+        last_snapshot.creation.strftime(format='%B %d, %Y at %l:%M %P ')
+      else
+        'Never'
+      end
+    end
+    alias :last_snap_time :last_snapshot_time
 
 end
 
@@ -399,11 +413,11 @@ class ZFSSnap
     property :zoned,            Boolean
 
     # Controls whether the .zfs directory is hidden or visible
-    property :snapdir,          Enum[ :hidden, :visible, :na ], :required => true
+    property :snapdir,          Enum[ :hidden, :visible, :na ], :default => :na
 
     # Controls how ACL entries are inherited  when  files  and
     # directories are created. See man page for more info.
-    property :aclinherit,       Enum[ :discard, :noallow, :restricted, :passthrough, :passthroughx, :na ], :required => true
+    property :aclinherit,       Enum[ :discard, :noallow, :restricted, :passthrough, :passthroughx, :na ], :default => :na
 
     # Controls whether this filesystem can be mounted.
     property :canmount,         Enum[ :on, :off, :noauto, :na ]

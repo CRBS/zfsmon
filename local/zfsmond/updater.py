@@ -14,12 +14,11 @@ import time
 import hashlib
 import ConfigParser as configparser
 from urllib2 import quote
-
-import zfsmond
+from datazfs import DataZFS
 
 ZFSMON_SERVER = "http://" + "127.0.0.1:4567"
 HOSTNAME = socket.gethostname()
-def main():
+def main(args):
     global ZFSMON_SERVER
     global HOSTNAME
     POOLFIELDS = 'all'
@@ -34,21 +33,9 @@ def main():
     config_path = '/etc/zfsmond.conf'
     
     # Parse some command line args just to be nice
-    zfsmon_server_cli_arg = None
-    for arg in sys.argv[1:]:
-        if '--with-config=' in arg:
-            config_path = arg.rsplit('=')[1]
-        elif '--help' in arg or '--usage' in arg:
-            print "Usage: " + sys.argv[0] + " [--with-config=/path/to/cfg] [http://ZFSMON_SERVER_HOSTNAME]"
-            return 0
-            
-        # Interpret anything else not prefixed with '--' as a hostname to use for the zfsmon server
-        elif not '--' in arg:
-            zfsmon_server_cli_arg = arg
-        else:
-            print "Usage: " + sys.argv[0] + " [--with-config=/path/to/cfg] [http://ZFSMON_SERVER_HOSTNAME]"
-            return 1
-            
+    cliargs = parse_cli_args(args)
+    if 'config' in cliargs:
+        config_path = cliargs['config'] or config_path
     try:
         with open(config_path, 'r') as f:
             config.readfp(f)
@@ -74,7 +61,7 @@ def main():
                 HOSTNAME = config.get('Network', 'hostname')
     
     # Set server after parsing if it was passed in as a command line option
-    if zfsmon_server_cli_arg: ZFSMON_SERVER = zfsmon_server_cli_arg
+    if cliargs['server']: ZFSMON_SERVER = zfsmon_server_cli_arg
     
     # Check if this host has been added yet
     # The line below checks if we got a 2xx HTTP status code
@@ -159,14 +146,13 @@ def post_update(zfsobjs, hostname=HOSTNAME, server=ZFSMON_SERVER):
     snapshots = False
     for obj in zfsobjs:
         # Check if this is a pool or a dataset, and POST to the appropriate resource
-        if isinstance(obj, ZPool):
+        if obj.type == 'pool':
             rescollection = "pools"
-        elif isinstance(obj, ZMount):
-            if obj.properties['type'] == 'snapshot':
+        elif obj.type == 'snapshot':
                 snapshots = True
                 post_snapshot(obj, hostname, server)
                 continue
-            else:
+        elif obj.type == 'dataset':
                 rescollection = "datasets"
         else: raise TypeError("Can't post a non-AbstractZFS object to the web service.")
         postreq = requests.post( server + "/" + hostname + "/" + rescollection + "/" + obj.name,
@@ -236,7 +222,7 @@ def get_datasets(FIELDS='all'):
 
 def get_snapshots(FIELDS='all'):
     """ Gets the snapshot history for each filesystem. """
-    snainfostr = fork_and_get_output("zfs list -t snapshot -H -o {0}".format(FIELDS).split())
+    snapinfostr = fork_and_get_output("zfs list -t snapshot -H -o {0}".format(FIELDS).split())
     header = get_zfs_snap_header()
     snapinfo = snapinfostr.splitlines()
     snapobjs = []
@@ -246,15 +232,15 @@ def get_snapshots(FIELDS='all'):
 
 def get_zpool_header():
     out = fork_and_get_output("zpool list -o all".split())
-    return out.split('\n')[0].strip()
+    return out.splitlines()[0].strip()
 
 def get_zfs_ds_header():
     out = fork_and_get_output("zfs list -o all".split())
-    return out.split('\n')[0].strip()
+    return out.splitlines()[0].strip()
 
 def get_zfs_snap_header():
     out = fork_and_get_output("zfs list -t snapshot -o all".split())
-    return out.split('\n')[0].strip()
+    return out.splitlines()[0].strip()
     
 def fork_and_get_output(cmd):
     try:
@@ -265,10 +251,27 @@ def fork_and_get_output(cmd):
             out = tf.read()
     except subprocess.CalledProcessError as e:
         log = logging.getLogger('zfsmond')
-        log.error('The call to `{0}` failed. Info: {1}'.format(" ".join(cmd),
-                                                               str(e))
+        log.error('The call to `{0}` failed. Info: {1}'.format(" ".join(cmd), str(e)))
         return None
     return out
 
+def parse_cli_args(args):
+    zfsmon_server_cli_arg = None
+    config_path = None
+    for arg in args[1:]:
+        if '--with-config=' in arg:
+            config_path = arg.rsplit('=')[1]
+        elif '--help' in arg or '--usage' in arg:
+            print "Usage: " + args[0] + " [--with-config=/path/to/cfg] [http://ZFSMON_SERVER_HOSTNAME]"
+            sys.exit(0)
+            
+        # Interpret anything else not prefixed with '--' as a hostname to use for the zfsmon server
+        elif not '--' in arg:
+            zfsmon_server_cli_arg = arg
+        else:
+            print "Usage: " + args[0] + " [--with-config=/path/to/cfg] [http://ZFSMON_SERVER_HOSTNAME]"
+            sys.exit(1) 
+    return { 'server': zfsmon_server_cli_arg, 'config': config_path }
+
 if __name__ == "__main__":
-    main()
+    main(sys.argv)

@@ -132,11 +132,7 @@ post '/:host/pools/:pool/?' do
             next
         else
             if ZUtil::ZFS_POOL_SIZE_FIELDS.include? k
-                if v == '-' then
-                    v = 0
-                else
-                    v = v.to_i
-                end
+                v = v.to_i
             end
             
             if ZUtil::ZFS_ENUM_FIELDS.include? k
@@ -163,9 +159,6 @@ post '/:host/pools/:pool/?' do
             # Dedup is a float but ZFS puts an 'x' on the end
             if k == 'dedup'
                 v = v[0..-1].to_f
-            end
-            if v == '-' && !(ZUtil::ZFS_POOL_SIZE_FIELDS.include? k)
-                next
             end
             @pool.attribute_set k.to_sym, v
         end
@@ -243,9 +236,7 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
     end
     @ds = ZUtil.get_ds_record @host, params[:ds]
     @snap = @ds.snapshots.first_or_create :dataset => @ds, :name => params[:snap]
-    puts "For #{params[:snap]}"
     request.POST.each do |k, v|
-        puts "before key: #{k} = #{v}"
         if not ZUtil::ZFS_DATASET_FIELDS.include? k
             next
         end
@@ -307,7 +298,6 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
         if k == 'ratio'
             v = v[0..-1].to_f
         end
-        puts "key: #{k} = #{v}"
         @snap.attribute_set k.to_sym, v
     end
     if @snap.dirty?

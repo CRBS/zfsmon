@@ -103,6 +103,7 @@
             <% if ds.mounted %>
                 <tr title="<%= ZUtil.get_desc :ds, 'mountpoint' %>"><td><strong>Mount Point:</strong></td><td><code><%= ds.mountpoint %></code></td>
             <% end %>
+            <tr><td><strong>Last snapshot:</strong></td><td><%= ds.last_snapshot_time %></td></tr>
         </table>
     </div>
     <% if (index+1) % 3 == 0 %>

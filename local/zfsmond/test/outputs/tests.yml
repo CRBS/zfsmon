@@ -1,0 +1,18 @@
+hosts:
+  - name: "prethumper-1-0"
+    path: "outputs/prethumper-1-0_v31"
+    version: 31
+    outputs:
+      zfs:
+        path: "zfs"
+        list: "zfs_list"
+        all: "zfs_list_-o_all"
+        all_noheader: "zfs_list_-H_-o_all"
+      zpool:
+        path: "zpool"
+        list: "zpool_list"
+        all: "zpool_list_-o_all"
+        all_noheader: "zpool_list_-H_-o_all"
+      zdb:
+        path: "zdb"
+        zdb: "zdb"
