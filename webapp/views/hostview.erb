@@ -16,7 +16,7 @@
 <div class="row">
   <div class="span6">
     <h3><a href="#" data-toggle="collapse" data-target="#ssh-settings">SSH Settings</a></h3>
-    <div id="ssh-settings" class="collapse<%= ' in' if @host.ssh_user %>">&nbsp;
+    <div id="ssh-settings" class="collapse in">&nbsp;
       <form action="<%= "/#{@host.hostname}" %>" method="post">
         <fieldset>
           <input type="hidden" name="_method" value="put" />
