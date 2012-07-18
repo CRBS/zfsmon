@@ -18,6 +18,8 @@ from datazfs import DataZFS
 
 ZFSMON_SERVER = "http://" + "127.0.0.1:4567"
 HOSTNAME = socket.gethostname()
+PROXIES = {}
+
 def main(args):
     global ZFSMON_SERVER
     global HOSTNAME
@@ -58,14 +60,18 @@ def main(args):
                 if ZFSMON_SERVER[-1:] == '/':
                     ZFSMON_SERVER = ZFSMON_SERVER[:-1]
             if config.has_option('Network', 'hostname'):
-                HOSTNAME = config.get('Network', 'hostname')
+                HOSTNAME = config.get('Network', 'hostname')a
+            if config.has_option('Network', 'http_proxy'):
+                PROXIES['http'] = config.get('Network', 'http_proxy')
+            if config.has_option('Network', 'https_proxy'):
+                PROXIES['https'] = config.get('Network', 'https_proxy')
     
     # Set server after parsing if it was passed in as a command line option
     if cliargs['server']: ZFSMON_SERVER = zfsmon_server_cli_arg
     
     # Check if this host has been added yet
     # The line below checks if we got a 2xx HTTP status code
-    if (requests.get( ZFSMON_SERVER + "/" + HOSTNAME ).status_code / 100) != 2:
+    if (requests.get( ZFSMON_SERVER + "/" + HOSTNAME, proxies=PROXIES ).status_code / 100) != 2:
         hostdata = dict()
         try:
             with tempfile.TemporaryFile() as tf:
@@ -77,7 +83,7 @@ def main(args):
         except subprocess.CalledProcessError as e:
             ZFS_LOG.error("uname called failed: " + str(e))
         
-        r = requests.post( ZFSMON_SERVER + "/" + HOSTNAME, data=hostdata )
+        r = requests.post( ZFSMON_SERVER + "/" + HOSTNAME, data=hostdata, proxies=PROXIES )
         if r.status_code / 100 != 2:
             ZFS_LOG.error('An HTTP {0} error was encountered when creating a new host on {1}. '.format(str(r.status_code), ZFSMON_SERVER) + 
                            'The server replied with this: {0}'.format(r.text))
@@ -156,7 +162,7 @@ def post_update(zfsobjs, hostname=HOSTNAME, server=ZFSMON_SERVER):
                 rescollection = "datasets"
         else: raise TypeError("Can't post a non-AbstractZFS object to the web service.")
         postreq = requests.post( server + "/" + hostname + "/" + rescollection + "/" + obj.name,
-                                 data=obj.properties )
+                                 data=obj.properties, proxies=PROXIES )
         if postreq.status_code / 100 != 2:
             ZFS_LOG.error(('An HTTP {statuscode} error was encountered when updating the {resource} ' +
                           '{hname}/{resname} on {serv}.').format( statuscode=str(postreq.status_code),
@@ -180,7 +186,7 @@ def post_snapshot(snap, hostname, server):
     ZFS_LOG = logging.getLogger("zfsmond.http")
     dataset = snap.snapped_ds_name
     postreq = requests.post( server + '/' + hostname + '/datasets/' + dataset + '/snapshots/' + snap.name, 
-                             data=snap.properties )
+                             data=snap.properties, proxies=PROXIES )
     if postreq.status_code / 100 != 2:
         ZFS_LOG.error(('An HTTP {statuscode} error was encountered when updating the snapshot ' +
                         '{hname}/{ds}/{snap} on {serv}.').format( statuscode=str(postreq.status_code),
