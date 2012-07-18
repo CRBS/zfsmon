@@ -60,7 +60,7 @@ def main(args):
                 if ZFSMON_SERVER[-1:] == '/':
                     ZFSMON_SERVER = ZFSMON_SERVER[:-1]
             if config.has_option('Network', 'hostname'):
-                HOSTNAME = config.get('Network', 'hostname')a
+                HOSTNAME = config.get('Network', 'hostname')
             if config.has_option('Network', 'http_proxy'):
                 PROXIES['http'] = config.get('Network', 'http_proxy')
             if config.has_option('Network', 'https_proxy'):
