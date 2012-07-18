@@ -87,7 +87,7 @@
 </div>
 <div class="row">
     <div class="span12">
-        <table class="table table-striped table-sortable">
+        <table class="table table-striped sortable">
             <tr>
                 <th>Dataset Name</th>
                 <th>Type</th>
@@ -101,9 +101,9 @@
                 <tr>
                     <td><a href="<%= @host.hostname + '/datasets/' + ds.name %>"><%= ds.name %></a></td>
                     <td><%= ds.type %></td>
-                    <td><%= ZUtil.convert_human_bytes ds.avail %></td>
-                    <td><%= ZUtil.convert_human_bytes ds.used %></td>
-                    <td>
+                    <td sorttable_customkey="<%= ds.avail %>"><%= ZUtil.convert_human_bytes ds.avail %></td>
+                    <td sorttable_customkey="<%= ds.used %>"><%= ZUtil.convert_human_bytes ds.used %></td>
+                    <td sorttable_customkey="<%= ds.mounted %>">
                         <span class="label <%= ds.mounted ? 'label-info' : '' %>">
                             <%= ds.mounted ? 'yes' : 'no' %>
                         </span>
@@ -113,7 +113,7 @@
                             <code><%= ds.mountpoint %></code>
                         <% end %>
                     </td>
-                    <td><%= ds.last_snapshot_time %></td>
+                    <td sorttable_customkey="<%= (snap = ds.last_snap) ? snap.creation.strftime("%s") : '0' %>"><%= ds.last_snapshot_time %></td>
                 </tr>
             <% end %>
         </table>

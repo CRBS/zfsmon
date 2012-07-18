@@ -9,15 +9,44 @@ class ZFSHost
     property :lastupdate,       DateTime
     property :ssh_user,         String
     property :ssh_key,          Text
+    property :status,           Enum[ :healthy, :errored, :faulted ], :required => true, :default => :healthy
     has n, :pools,              :model => 'ZFSPool', :constraint => :destroy
-    has n, :datasets,             :model => 'ZFSDataset', :constraint => :destroy
-    
+    has n, :datasets,           :model => 'ZFSDataset', :constraint => :destroy
+
+    before :valid?, :check_health
+
+    def check_health(context=:default)
+        self.pools.each do |pool|
+            if pool.health != :online then
+                self.status = (pool.health == :degraded) ? :errored : :faulted
+                return
+            end
+        end
+        self.status = :healthy
+    end
+
+    def unhealthy_pools
+        self.pools.all :health.not => :online, :order => [ :name.asc ]
+    end
+
+    def degraded_pools
+        self.pools.all :health.eq => :degraded, :order => [ :name.asc ]
+    end
+
+    def faulted_pools
+        self.pools.all :health.eq => :degraded, :order => [ :name.asc ]
+    end
+
     def self.activehosts
         all :lastupdate.gt => Time.now - (60 * 60 * 24), :order => [ :hostname.asc ]
     end
-    
+
     def self.stalehosts
         all :lastupdate.lte => Time.now - (60 * 60 * 24), :order => [ :hostname.asc ]
+    end
+
+    def self.errored
+        all :status.not => :healthy, :order => [ :hostname.asc ]
     end
 
 end
@@ -33,7 +62,7 @@ class ZFSPool
     property :name,             String, :required => true
     
     # A unique ID for the dataset (the SHA-1 hash of the hostname + the name of the pool)
-    property :dsuniqueid,              String, :required => true, :unique => true
+    property :dsuniqueid,       String, :required => true, :unique => true
 
     # Each pool must specify its capacity, free space, and allocated space in bytes
     property :size,             Integer, :required => true, :min => 0, :max => 9223372036854775808, :default => 0
