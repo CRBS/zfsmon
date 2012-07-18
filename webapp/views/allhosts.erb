@@ -8,7 +8,7 @@
 <% if @allhosts then %>
     <div class="row">
     <% @allhosts.each_with_index do |host, index| %>
-            <div class="span6 well" style="height: 100%; 
+            <div class="span5 well" style="height: 100%; 
             <% host.pools.each do |p| %>
                 <% case p.health; when :degraded %>
                     background-color: #FF9D27"
