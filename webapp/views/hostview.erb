@@ -86,30 +86,38 @@
     </div>
 </div>
 <div class="row">
-<% @host.datasets.each_with_index do |ds, index| %>
-    <div class="span3 well">
-        <h4><a href="<%= @host.hostname + '/datasets/' + ds.name %>"><%= ds.name %></a></h4>
-        <p><%= ds.type %></p>
-        <table class="table-condensed">
-            <tr title="<%= ZUtil.get_desc :ds, 'avail' %>"><td><strong>Available:</strong></td><td><%= ZUtil.convert_human_bytes ds.avail %></td></tr>
-            <tr title="<%= ZUtil.get_desc :ds, 'used' %>"><td><strong>Used:</strong></td><td><%= ZUtil.convert_human_bytes ds.used %></td></tr>
-            <tr title="<%= ZUtil.get_desc :ds, 'mounted' %>"><td><strong>Mounted:</strong></td>
-                <td>
-                    <span class="label <%= ds.mounted ? 'label-info' : '' %>">
-                    <%= ds.mounted ? 'yes' : 'no' %>
-                    </span>
-                </td>
+    <div class="span9">
+        <table class="table table-striped">
+            <tr>
+                <th>Dataset Name</th>
+                <th>Type</th>
+                <th title="<%= ZUtil.get_desc :ds, 'avail' %>">Available</th>
+                <th title="<%= ZUtil.get_desc :ds, 'used' %>">Used</th>
+                <th title="<%= ZUtil.get_desc :ds, 'mounted' %>">Mounted?</th>
+                <th title="<%= ZUtil.get_desc :ds, 'mountpoint' %>">Mount Point</th>
+                <th>Last Snapshot</th>
             </tr>
-            <% if ds.mounted %>
-                <tr title="<%= ZUtil.get_desc :ds, 'mountpoint' %>"><td><strong>Mount Point:</strong></td><td><code><%= ds.mountpoint %></code></td>
+            <% @host.datasets.each_with_index do |ds, index| %>
+                <tr>
+                    <td><a href="<%= @host.hostname + '/datasets/' + ds.name %>"><%= ds.name %></a></td>
+                    <td><%= ds.type %></td>
+                    <td><%= ZUtil.convert_human_bytes ds.avail %></td>
+                    <td><%= ZUtil.convert_human_bytes ds.used %></td>
+                    <td>
+                        <span class="label <%= ds.mounted ? 'label-info' : '' %>">
+                            <%= ds.mounted ? 'yes' : 'no' %>
+                        </span>
+                    </td>
+                    <td>
+                        <% if ds.mounted %>
+                            <code><%= ds.mountpoint %></code>
+                        <% end %>
+                    </td>
+                    <td><%= ds.last_snapshot_time %></td>
+                </tr>
             <% end %>
-            <tr><td><strong>Last snapshot:</strong></td><td><%= ds.last_snapshot_time %></td></tr>
         </table>
     </div>
-    <% if (index+1) % 3 == 0 %>
-        </div><div class="row">
-    <% end %>
-<% end %>
 </div>
 <script type="application/javascript">
   $(".collapse").collapse();
