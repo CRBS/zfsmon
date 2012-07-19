@@ -113,7 +113,9 @@
                             <code><%= ds.mountpoint %></code>
                         <% end %>
                     </td>
-                    <td sorttable_customkey="<%= (snap = ds.last_snap) ? snap.creation.strftime("%s") : '0' %>"><%= ds.last_snapshot_time %></td>
+                    <td sorttable_customkey="<%= (snap = ds.last_snap) ? snap.creation.strftime("%s") : '0' %>">
+                        <%= (ds.last_snapshot_time == Time.new(0)) ? 'Never' : ds.last_snapshot_time.strftime('<nobr>%B %d, %Y</nobr> <nobr>at %l:%M %P</nobr>') %>
+                    </td>
                 </tr>
             <% end %>
         </table>

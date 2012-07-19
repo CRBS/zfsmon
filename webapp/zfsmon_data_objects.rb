@@ -348,9 +348,9 @@ class ZFSDataset
     
     def last_snapshot_time
       if last_snapshot
-        last_snapshot.creation.strftime(format='%B %d,&nbsp;%Y at&nbsp;%l:%M&nbsp;%P ')
+        last_snapshot.creation.to_time
       else
-        'Never'
+        Time.new(0)
       end
     end
     alias :last_snap_time :last_snapshot_time
