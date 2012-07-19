@@ -34,8 +34,8 @@
                 <% end %>
             <% end %>>
                 <% if host.lastupdate.to_time < (Time.now - (2 * 60 * 60)) then %>
-                        <div class="alert-info">
-                            <strong>Warning:</strong> This host has not checked in recently.
+                        <div class="alert alert-danger">
+                           This host has not checked in since <span title="<%= host.lastupdate.to_s(:rfc822) %>"><%= ZUtil.time_ago_in_words(host.lastupdate) %> ago.</span>
                         </div>
                 <% end %>
                 <h2><a href="/<%= host.hostname %>"><%= host.hostname %></a></h2>

@@ -1,5 +1,8 @@
 # Extra methods for parsing and data transformation and hashes for other things
+require 'action_view'
+require 'active_support/all'
 module ZUtil
+    extend ActionView::Helpers::DateHelper
     # Need to move these hashes into a database or something at some point.
     ZPOOL_DESCRIPTIONS = { 'name' =>     'The name of the ZFS pool',
                             'size' =>     'The total size of the storage pool',

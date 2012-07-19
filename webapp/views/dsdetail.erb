@@ -106,7 +106,7 @@ table.fixed {
                     <tr>
                         <td><%= snap.name %></td>
                         <td sorttable_customkey="<%= snap.creation.strftime('%s') %>"><%= snap.creation.strftime format='%A, %B %d, %Y at&nbsp;%l:%M %P' %></td>
-                        <td><%= ZUtil.convert_human_bytes snap.used %></td>
+                        <td sorttable_customkey="<%= snap.used %>"><%= ZUtil.convert_human_bytes snap.used %></td>
                     </tr>
                 <% end %>
             </table>

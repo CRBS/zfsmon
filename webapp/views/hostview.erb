@@ -10,7 +10,7 @@
     </div>
     <form action="/<%= @host.hostname %>" method="post">
         <input type="hidden" name="_method" value="delete">
-        <input type="submit" value="Delete Host" class="btn btn-danger">
+        <input type="submit" id="host_delete" value="Delete Host" class="btn btn-danger">
     </form>
 </div>
 <div class="row">
@@ -24,10 +24,10 @@
           <input type="text" name="ssh_user"<%= %[ value="#{@host.ssh_user}"] if @host.ssh_user %> />
           <label for="ssh_key">SSH Private Key (PEM format)</label>
           <% if @host.ssh_key %>
-            <p id="privkey-edit">Hidden. <a href="#" onClick="$('#privkey-text').show()">Click here</a> to replace.</p>
-            <textarea id="privkey-textarea" style="width: 95%; display: none;" name="ssh_key" rows="8"></textarea>
+            <p id="privkey-edit">Hidden. <a href="#" onClick="$('#privkey-textarea').show()">Click here</a> to replace.</p>
+            <textarea id="privkey-textarea" style="width: 95%; display: none;" name="ssh_key" rows="4"></textarea>
           <% else %>
-            <textarea id="privkey-textarea" style="width: 95%;" name="ssh_key" rows="8"></textarea>
+            <textarea id="privkey-textarea" style="width: 95%;" name="ssh_key" rows="4"></textarea>
           <% end %>
           <input type="submit" class="btn btn-primary" value="Save changes" />
         </fieldset>
@@ -122,5 +122,13 @@
     </div>
 </div>
 <script type="application/javascript">
-  $(".collapse").collapse();
+    $(".collapse").collapse();
+    $("#host_delete").click(function(e) {
+        var confirmation = confirm("This will delete all data stored for <%= @host.hostname %> from the server.\n" 
+                                + "You will also need to remove updater.py from root's crontab on that host to prevent it from updating again.");
+        if(confirmation) {
+            return true;
+        }
+        return false;
+    });
 </script>
