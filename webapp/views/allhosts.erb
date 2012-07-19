@@ -22,11 +22,6 @@
     <div class="row">
     <% @allhosts.each_with_index do |host, index| %>
             <div class="span5 well" <%= "style=\"height: 100%; #{ZUtil.get_background_color_for_status(ZUtil.get_status_for_host(host))}\"" %>>
-                <% if host.lastupdate.to_time < (Time.now - (2 * 60 * 60)) then %>
-                        <div class="alert alert-danger">
-                           This host has not checked in since <span title="<%= host.lastupdate.to_s(:rfc822) %>"><%= ZUtil.time_ago_in_words(host.lastupdate) %> ago.</span>
-                        </div>
-                <% end %>
                 <h2><a href="/<%= host.hostname %>"><%= host.hostname %></a></h2>
                 <p><%= host.userdescription or host.hostdescription %></p>
                 <ul>
@@ -41,6 +36,11 @@
                             <li><strong><a href="/<%= host.hostname %>/pools/<%= pool.name %>"><%= pool.name %></a>:</strong>&nbsp;<%= pool.health %></li>
                         <% end %>
                     </ul>
+                <% end %>
+                <% if host.lastupdate.to_time < (Time.now - (2 * 60 * 60)) then %>
+                        <div class="alert alert-danger">
+                           This host has not checked in since <span title="<%= host.lastupdate.to_s(:rfc822) %>"><%= ZUtil.time_ago_in_words(host.lastupdate) %> ago.</span>
+                        </div>
                 <% end %>
             </div>
         <% if ((index+1) % 2 == 0) && (index > 0) %>
