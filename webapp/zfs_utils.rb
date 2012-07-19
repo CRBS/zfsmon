@@ -235,6 +235,26 @@ module ZUtil
         end
         return tags
     end
+
+    def ZUtil.get_status_for_host(host)
+        host.pools.each do |p|
+          return p.health if [:degraded, :faulted, :unavail].include? p.health
+        end
+        return :online
+    end
+
+    def ZUtil.get_background_color_for_status(status)
+        case status
+          when :degraded
+            'background-color: #FFBD47'
+          when :faulted
+            'background-color: #FF8F50'
+          when :unavail
+            'background-color: #6F6F6F; color: #FFFFFF'
+          else
+            ''
+        end
+    end
 end # module end
 
 # I don't know where else to put this, or why it is not a standard
