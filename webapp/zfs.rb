@@ -11,7 +11,7 @@ require "#{File.dirname(__FILE__)}/zfs_ssh"
 
 DataMapper.finalize.auto_upgrade!
 
-# set :environment, :production
+set :environment, :production
 configure do
     enable :static
 end
@@ -46,7 +46,7 @@ end
 
 get '/' do
     if params[:show] == 'errored' then
-      @allhosts = ZFSHost.errored
+      @allhosts = ZFSHost.errored + ZFSHost.stale
       @show = :errored
     elsif params[:show] == 'healthy' then
       @allhosts = (ZFSHost.all :order => [ :hostname.asc ]) - ZFSHost.errored

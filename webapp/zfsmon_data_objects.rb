@@ -39,11 +39,11 @@ class ZFSHost
     end
 
     def self.activehosts
-        all :lastupdate.gt => Time.now - (60 * 60 * 24), :order => [ :hostname.asc ]
+        all :lastupdate.gt => Time.now - (60 * 60 * 1), :order => [ :hostname.asc ]
     end
 
-    def self.stalehosts
-        all :lastupdate.lte => Time.now - (60 * 60 * 24), :order => [ :hostname.asc ]
+    def self.stale
+        all :lastupdate.lte => Time.now - (60 * 60 * 1), :order => [ :hostname.asc ]
     end
 
     def self.errored
