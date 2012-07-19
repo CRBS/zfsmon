@@ -187,7 +187,7 @@ class ZFSDataset
     property :recsize,          Integer, :required => false, :min => 0
 
     # The mount point used for this file system
-    property :mountpoint,       String, :required => true, :default => 'none'
+    property :mountpoint,       String, :required => true, :default => 'none', :length => 255
 
     # Controls whether the file system is shared via NFS
     property :sharenfs,         String, :required => false, :length => 150
@@ -412,7 +412,7 @@ class ZFSSnap
     property :recsize,          Integer, :required => false, :min => 0
 
     # The mount point used for this file system
-    property :mountpoint,       String, :required => false, :default => 'none'
+    property :mountpoint,       String, :required => false, :default => 'none', :length => 255
 
     # Controls whether the file system is shared via NFS
     property :sharenfs,         String, :required => false, :length => 150
