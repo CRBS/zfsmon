@@ -21,18 +21,18 @@
 <% if @allhosts then %>
     <div class="row">
     <% @allhosts.each_with_index do |host, index| %>
-            <div class="span5 well" style="height: 100%; 
             <% host.pools.each do |p| %>
                 <% case p.health; when :degraded %>
-                    background-color: #FFBD47"
+                    <% @host_bgcolor = 'background-color: #FFBD47' %>
                 <% when :faulted %>
-                    background-color: #FF8F50"
+                    <% @host_bgcolor = 'background-color: #FF8F50' %>
                 <% when :unavail %>
-                    background-color: #6F6F6F; color: #FFFFFF"
+                    <% @host_bgcolor = 'background-color: #6F6F6F; color: #FFFFFF' %>
                 <% else %>
-                    <%= '"' %>
+                    <% @host_bgcolor = '' %>
                 <% end %>
-            <% end %>>
+            <% end %>
+            <div class="span5 well" <%= "style=\"height: 100%; #{@host_bgcolor}\"" %>>
                 <% if host.lastupdate.to_time < (Time.now - (2 * 60 * 60)) then %>
                         <div class="alert alert-danger">
                            This host has not checked in since <span title="<%= host.lastupdate.to_s(:rfc822) %>"><%= ZUtil.time_ago_in_words(host.lastupdate) %> ago.</span>
