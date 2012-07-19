@@ -348,7 +348,7 @@ class ZFSDataset
     
     def last_snapshot_time
       if last_snapshot
-        last_snapshot.creation.strftime(format='%B %d, %Y at&nbsp;%l:%M %P ')
+        last_snapshot.creation.strftime(format='%B %d,&nbsp;%Y at&nbsp;%l:%M&nbsp;%P ')
       else
         'Never'
       end
