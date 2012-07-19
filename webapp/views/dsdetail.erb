@@ -105,7 +105,7 @@ table.fixed {
                 <% @ds.snapshots.each do |snap| %>
                     <tr>
                         <td><%= snap.name %></td>
-                        <td><%= snap.creation.strftime format='%A, %B %d, %Y at %l:%M %P' %></td>
+                        <td sorttable_customkey="<%= snap.creation.strftime('%s') %>"><%= snap.creation.strftime format='%A, %B %d, %Y at&nbsp;%l:%M %P' %></td>
                         <td><%= ZUtil.convert_human_bytes snap.used %></td>
                     </tr>
                 <% end %>
