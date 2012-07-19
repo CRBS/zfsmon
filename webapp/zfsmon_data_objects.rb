@@ -6,6 +6,7 @@ class ZFSHost
     property :id,               Serial
     property :hostname,         String, :required => true, :unique => true
     property :hostdescription,  Text
+    property :userdescription,  Text
     property :lastupdate,       DateTime
     property :ssh_user,         String
     property :ssh_key,          Text

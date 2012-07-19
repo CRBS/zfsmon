@@ -39,7 +39,7 @@
                         </div>
                 <% end %>
                 <h2><a href="/<%= host.hostname %>"><%= host.hostname %></a></h2>
-                <p><%= host.hostdescription %></p>
+                <p><%= host.userdescription or host.hostdescription %></p>
                 <ul>
                     <li><a href="/<%= host.hostname %>/pools">Pools</a>: <%= host.pools.count %></li>
                     <li><a href="/<%= host.hostname %>/datasets">Datasets</a>: <%= host.datasets.count %></li>

@@ -5,7 +5,22 @@
 </div>
 <div class="row">
     <div class="span6">
-        <p><%= @host.hostdescription %></p>
+        <p>
+            <%= @host.userdescription or @host.hostdescription %>
+            <a href="#" data-toggle="collapse" data-target="#host_description" id="host_description_edit">
+                <i class="icon-edit"></i>
+            </a>
+        </p>
+        <div id="host_description" class="collapse">&nbsp;
+            <form action="<%= "/#{@host.hostname}" %>" method="post">
+                <fieldset>
+                    <input type="hidden" name="_method" value="put" />
+                    <label for="userdescription">Description</label>
+                    <input type="text" style="width: 80%;" name="userdescription" value="<%= @host.userdescription or @host.hostdescription %>" />
+                    <input type="submit" value="Save changes" class="btn btn-primary" />
+                </fieldset>
+            </form>
+        </div>
         <p><strong>Last update:</strong> <%= @host.lastupdate.strftime format='%A, %B %d, %Y at %l:%M %P ' %></p>
     </div>
     <form action="/<%= @host.hostname %>" method="post">
@@ -16,7 +31,7 @@
 <div class="row">
   <div class="span6">
     <h3><a href="#" data-toggle="collapse" data-target="#ssh-settings">SSH Settings</a></h3>
-    <div id="ssh-settings" class="collapse in">&nbsp;
+    <div id="ssh-settings" class="collapse">&nbsp;
       <form action="<%= "/#{@host.hostname}" %>" method="post">
         <fieldset>
           <input type="hidden" name="_method" value="put" />
@@ -122,7 +137,6 @@
     </div>
 </div>
 <script type="application/javascript">
-    $(".collapse").collapse();
     $("#host_delete").click(function(e) {
         var confirmation = confirm("This will delete all data stored for <%= @host.hostname %> from the server.\n" 
                                 + "You will also need to remove updater.py from root's crontab on that host to prevent it from updating again.");

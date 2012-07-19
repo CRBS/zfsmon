@@ -77,7 +77,12 @@ put '/:host' do
     if not @host
       host_not_found params[:host]
     end
-    if @host.update :ssh_user => params[:ssh_user], :ssh_key => params[:ssh_key] #.gsub(/\p{Space}/, '')
+    if params[:ssh_user] && params[:ssh_key]
+      @host.update :ssh_user => params[:ssh_user], :ssh_key => params[:ssh_key]
+      redirect "/#{params[:host]}"
+    elsif params[:userdescription]
+      params[:userdescription] = nil if params[:userdescription] == ''
+      @host.update :userdescription => params[:userdescription]
       redirect "/#{params[:host]}"
     else
       "There was a problem updating #{params[:host]}."
