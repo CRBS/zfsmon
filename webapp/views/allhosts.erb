@@ -45,7 +45,7 @@
                     <li><a href="/<%= host.hostname %>/datasets">Datasets</a>: <%= host.datasets.count %></li>
                 </ul>
                 <p><strong>Last update:</strong> <%= host.lastupdate.strftime format='%A, %B %d, %Y at&nbsp;%l:%M %P ' %></p>
-                <% if @show == :errored %>
+                <% if @show == :errored && host.unhealthy_pools %>
                     <h4>Errors:</h4>
                     <ul>
                         <% host.unhealthy_pools.each do |pool| %>
