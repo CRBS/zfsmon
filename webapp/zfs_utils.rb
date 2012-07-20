@@ -155,7 +155,7 @@ module ZUtil
 
 
     def ZUtil.get_host_record( hostget )
-        if hostget.is_a? Integer
+        if hostget.is_int?
             @host = ZFSHost.get hostget.to_i
         else
             @host = ZFSHost.first :hostname => hostget
@@ -256,3 +256,16 @@ module ZUtil
         end
     end
 end # module end
+
+# I don't know where else to put this, or why it is not a standard
+# method in the first place.
+class String
+    def is_int?
+        Integer(self, 10)
+        rescue ArgumentError
+            false
+        else
+            true
+    end
+end
+

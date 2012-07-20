@@ -2,16 +2,20 @@
 
 ZFSMON_UPDATER_PATH='/usr/bin/updater.py'
 ZFSMON_LOG_PATH='/var/log/zfsmond'
+ZFSMON_EGG_PATH='/usr/lib/python2.6/site-packages/zfsmond-latest.egg'
+ZFSMON_CONF_PATH='/etc/zfsmond.conf'
 
 ZFSMON_CRON="*/15 * * * * $ZFSMON_UPDATER_PATH 2>&1 >> $ZFSMON_LOG_PATH"
 
-SETUPTOOLS_URI="http://pypi.python.org/packages/2.6/s/setuptools/setuptools-0.6c11-py2.6.egg"
-ZFSMOND_URI="http://devilray.crbs.ucsd.edu/skip-proxy/zfsmond-latest.egg"
+SETUPTOOLS_URI='http://pypi.python.org/packages/2.6/s/setuptools/setuptools-0.6c11-py2.6.egg'
+ZFSMON_DOWNLOAD_EGG_URI='http://devilray.crbs.ucsd.edu/skip-proxy/zfsmond-latest.egg'
+ZFSMON_DOWNLOAD_CONF_URI='http://devilray.crbs.ucsd.edu/skip-proxy/zfsmond-latest.egg'
 
 # Use UCSD proxy in case we're in private IP space.
-export http_proxy="http://webproxy.ucsd.edu:3128"
-export https_proxy="http://webproxy.ucsd.edu:3128"
-
+http_proxy="http://webproxy.ucsd.edu:3128"
+export http_proxy
+https_proxy="http://webproxy.ucsd.edu:3128"
+export https_proxy
 
 function install_setuptools() {
   curl -S "$SETUPTOOLS_URI" -o setuptools.egg && sudo sh ./setuptools.egg
@@ -24,9 +28,9 @@ which easy_install 2>/dev/null || (printf '%s\n' 'easy_install not found.' 'Inst
 printf '\n'
 
 
-if [[ -f /usr/lib/python2.6/site-packages/zfsmond-latest.egg ]]; then
+if [ -f "$ZFSMON_EGG_PATH" ]; then
   printf '%s\n' "zfsmond is already installed. performing upgrade..."
-  sudo rm -rf /usr/lib/python2.6/site-packages/zfsmond-latest.egg
+  sudo rm -rf "$ZFSMON_EGG_PATH"
 fi
 
 
@@ -35,17 +39,22 @@ easy_install requests >/dev/null
 
 
 printf '%s' "Installing latest zfsmond egg... "
-curl -S "$ZFSMOND_URI" -O zfsmond-latest.egg && sudo easy_install zfsmond-latest.egg >/dev/null && printf '%s\n' "done."
+curl -S "$ZFSMON_DOWNLOAD_EGG_URI" -O zfsmond-latest.egg && sudo easy_install zfsmond-latest.egg >/dev/null && printf '%s\n' "done."
 rm -f zfsmond-latest.egg
 
 if [[ ! -f /etc/zfsmond.conf ]]; then
     printf '%s\n' "Getting configuration file... "
-    wget http://devilray.crbs.ucsd.edu/skip-proxy/zfsmond.conf --quiet && sudo cp zfsmond.conf /etc/ && printf '%s\n' "placed at /etc/zfsmond.conf"
+    curl -S "$ZFSMON_DOWNLOAD_CONF_URI" -O zfsmond.conf && sudo cp zfsmond.conf "$ZFSMON_CONF_PATH" && printf '%s\n' "placed at $ZFSMON_CONF_PATH"
     rm -f zfsmond.conf
 fi
 
 
-(which updater.py &>/dev/null && printf '%s\n' "updater.py is installed.") || (printf '%s\n' "Something went wrong during installation." && return 1)
+if [ -f "$ZFSMON_UPDATER_PATH" ]; then
+	printf '%s\n' "$ZFSMON_UPDATER_PATH is installed."
+else
+	printf '%s\n' 'Something went wrong during installation.'
+	return 1
+fi
 
 
 # Prompt user: Add to crontab?
