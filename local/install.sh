@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Local file paths
 ZFSMON_UPDATER_PATH='/usr/bin/updater.py'
