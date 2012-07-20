@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 export http_proxy="http://webproxy.ucsd.edu:3128"
 export https_proxy="http://webproxy.ucsd.edu:3128"
 
