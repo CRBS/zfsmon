@@ -61,5 +61,4 @@ while : ; do
 done
 printf '\n'
 
-unset install_setuptools
 rm -f zfsmond-latest.egg
