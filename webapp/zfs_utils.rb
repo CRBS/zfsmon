@@ -257,8 +257,6 @@ module ZUtil
     end
 end # module end
 
-# I don't know where else to put this, or why it is not a standard
-# method in the first place.
 class String
     def is_int?
         Integer(self, 10)
