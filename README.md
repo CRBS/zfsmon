@@ -1,5 +1,5 @@
 # zfsmon #
-zfsmon is a combination of a Python script that runs on your storage servers as a cron job 
+zfs monitor (a catchier name may be forthcoming) is a combination of a Python script that runs on your storage servers as a cron job 
 and a Sinatra-based webapp that runs elsewhere to monitor your ZFS storage.
 
 A picture is worth a thousand words, so [here are 5000 of them](http://imgur.com/a/4JP1g).
