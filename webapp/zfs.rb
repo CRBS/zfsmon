@@ -3,7 +3,7 @@ require 'data_mapper'
 require 'yaml'
 
 # DataMapper::Logger.new(STDOUT, :debug)
-DataMapper.setup(:default, "sqlite3://#{Dir.pwd}/zfsdata.db")
+DataMapper.setup(:default, "sqlite3://#{File.dirname(__FILE__)}/zfsdata.db")
 
 require "#{File.dirname(__FILE__)}/zfsmon_data_objects"
 require "#{File.dirname(__FILE__)}/zfs_utils"
