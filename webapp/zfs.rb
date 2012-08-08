@@ -234,11 +234,8 @@ post '/:host/datasets/:ds/snapshot' do
       ssh.request_update
       ssh.close
       redirect "/#{@host.hostname}/datasets/#{@ds.name}"
-    rescue Exception => e
-      puts "User: #{@host.ssh_user}"
-      puts "Key: #{@host.ssh_key}"
-      "Unable to create a snapshot of #{@ds.name} on #{@host.hostname}.\n#{e.message}"
-      raise e
+    rescue ZSSHException => e
+      %(<p>Unable to create a snapshot of #{@ds.name} on #{@host.hostname}.<br />#{e.message}<br /><a href="/#{@host.hostname}">Click here</a> to return.</p>)
     end
 end
 

@@ -1,18 +1,22 @@
 require 'net/ssh'
 
+class ZSSHException < Exception
+end
+
 class ZSSH
   def initialize(host, options={})
     raise ArgumentError if not host.respond_to? 'hostname'
+    raise ZSSHException, "No SSH username or key data for #{host.hostname}." if not (host.ssh_user || host.ssh_key)
     begin
       @session = self.class.create_session(host)
     rescue Timeout::Error
-      raise "Could not connect to #{host.hostname} because the connection timed out."
+      raise ZSSHException, "Could not connect to #{host.hostname} because the connection timed out."
     rescue Errno::EHOSTUNREACH
-      raise "Could not connect to #{host.hostname} because the host is unreachable."
+      raise ZSSHException, "Could not connect to #{host.hostname} because the host is unreachable."
     rescue Errno::ECONNREFUSED
-      raise "Could not connect to #{host.hostname} because the connection was refused."
+      raise ZSSHException, "Could not connect to #{host.hostname} because the connection was refused."
     rescue Net::SSH::AuthenticationFailed
-      raise "Authentication for #{host.hostname} as #{host.ssh_user} failed."
+      raise ZSSHException, "Authentication for #{host.hostname} as #{host.ssh_user} failed."
     end
   end
 
