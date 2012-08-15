@@ -258,7 +258,7 @@ def get_pool_status():
     pools_status = split_status_pools(fork_and_get_output("zpool status".split()))
     pools = []
     for p in pools_status:
-        pools.append(PoolStatus(p))
+        pools.append(status.PoolStatus(p))
     return pools
 
 def get_zpool_header():
