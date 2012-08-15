@@ -13,8 +13,10 @@ import socket
 import time
 import hashlib
 import ConfigParser as configparser
+import status
 from urllib2 import quote
 from datazfs import DataZFS
+
 
 ZFSMON_SERVER = "http://" + "127.0.0.1:4567"
 HOSTNAME = socket.gethostname()
@@ -73,16 +75,9 @@ def main(args):
     # The line below checks if we got a 2xx HTTP status code
     if (requests.get( ZFSMON_SERVER + "/" + HOSTNAME, proxies=PROXIES ).status_code / 100) != 2:
         hostdata = dict()
-        try:
-            with tempfile.TemporaryFile() as tf:
-                subprocess.check_call(['uname', '-a'], stdout=tf)
-                tf.flush()
-                tf.seek(0)
-                hostdata['hostname'] = HOSTNAME
-                hostdata['hostdescription'] = tf.read()
-        except subprocess.CalledProcessError as e:
-            ZFS_LOG.error("uname called failed: " + str(e))
-        
+        hostdata['hostname'] = HOSTNAME
+        hostdata['hostdescription'] = fork_and_get_output(['uname', '-a'])
+
         r = requests.post( ZFSMON_SERVER + "/" + HOSTNAME, data=hostdata, proxies=PROXIES )
         if r.status_code / 100 != 2:
             ZFS_LOG.error('An HTTP {0} error was encountered when creating a new host on {1}. '.format(str(r.status_code), ZFSMON_SERVER) + 
@@ -94,8 +89,6 @@ def main(args):
     # Poll for the updated information we want to send
     pools = get_pools()
     for pool in pools:
-        # Clean up names to be URL-safe because this doesn't work in AbstractZFS' constructor
-        # for some reason
         pool.properties['name'] = quote(pool.properties['name'].replace('/', '-'))
         # Create a unique ID for each by taking the SHA-1 hash of
         # the hostname + the name of the dataset + "pool"
@@ -125,6 +118,8 @@ def main(args):
             if ds.name == snap.snapped_ds_name:
                 snap.properties['dsuniqueid'] = ds.properties['dsuniqueid']
                 break
+    poolstatus = get_pool_status()
+
     # Do the updates once we're sure that this host exists
     try:
         if not post_update(pools, HOSTNAME, ZFSMON_SERVER):
@@ -136,12 +131,15 @@ def main(args):
         if not post_update(snapshots, HOSTNAME, ZFSMON_SERVER):
             ZFS_LOG.warning("Not all snapshots could be updated.")
             return 0
+        if not post_pool_status(poolstatus, HOSTNAME, ZFSMON_SERVER):
+            ZFS_LOG.warning("Not all pools could have their status updated.")
+            return 0
     except TypeError as e:
         ZFS_LOG.error(str(e))
         ZFS_LOG.error("Update failed.")
         return 1
     return 0
-            
+
 def post_update(zfsobjs, hostname=HOSTNAME, server=ZFSMON_SERVER):
     """ POSTs the updated properties for a ZFS object to the webservice.
         zfsobjs is a list of AbstractZFS objects
@@ -204,7 +202,26 @@ def post_snapshot(snap, hostname, server):
                                                                         snap.properties['name'], 
                                                                         ZFSMON_SERVER ))
     return True
-    
+
+def post_pool_status(ps, hostname, server):
+    ZFS_LOG = logging.getLogger("zfsmond.http")
+    for p in ps:
+        pool = p.name
+        headers = {'content-type': 'application/json'}
+        try:
+            postreq = requests.post( server + '/' + hostname + '/pools/' + pool + '/status', data=p.json, headers=headers, proxies=PROXIES)
+        except:
+            return False
+        if postreq.status_code / 100 != 2:
+            ZFS_LOG.error(('An HTTP {statuscode} error was encountered when updating the status of ' +
+                            '{hname}/{pool} on {serv}.').format( statuscode=str(postreq.status_code),
+                                                                    hname=hostname, pool=pool,
+                                                                    serv=server ))
+            continue
+        elif postreq.status_code == 201:
+            ZFS_LOG.info('Successfully created new status record for {0}/{1} on {2}.'.format( HOSTNAME, pool, ZFSMON_SERVER ))
+    return True
+
 def get_pools():
     """ Gets the active ZFS pools by calling `zpool list` and parsing the output. Returns a list of ZPool objects
         populated with the properties returned by zpool list -H -o all. """
@@ -236,6 +253,14 @@ def get_snapshots(FIELDS='all'):
         snapobjs.append(DataZFS(snapstr, header, 'snapshot'))
     return snapobjs
 
+def get_pool_status():
+    """ Gets the status of each zpool by calling `zpool status` and and parsing the output. """
+    pools_status = split_status_pools(fork_and_get_output("zpool status"))
+    pools = []
+    for p in pools_status:
+        pools.append(PoolStatus(p))
+    return pools
+
 def get_zpool_header():
     out = fork_and_get_output("zpool list -o all".split())
     return out.splitlines()[0].strip()
@@ -247,7 +272,7 @@ def get_zfs_ds_header():
 def get_zfs_snap_header():
     out = fork_and_get_output("zfs list -t snapshot -o all".split())
     return out.splitlines()[0].strip()
-    
+
 def fork_and_get_output(cmd):
     try:
         with tempfile.TemporaryFile() as tf:
@@ -260,6 +285,21 @@ def fork_and_get_output(cmd):
         log.error('The call to `{0}` failed. Info: {1}'.format(" ".join(cmd), str(e)))
         return None
     return out
+
+def split_status_pools(sp):
+    status = []
+    pools = []
+    first_pool = True
+    for line in sp.splitlines():
+        if 'pool:' in line:
+            if first_pool:
+                first_pool = False
+            else:
+                pools.append(''.join(status))
+                status = []
+        status.append(line)
+    pools.append(''.join(status))
+    return pools
 
 def parse_cli_args(args):
     zfsmon_server_cli_arg = None
