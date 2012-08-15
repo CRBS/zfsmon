@@ -255,7 +255,7 @@ def get_snapshots(FIELDS='all'):
 
 def get_pool_status():
     """ Gets the status of each zpool by calling `zpool status` and and parsing the output. """
-    pools_status = split_status_pools(fork_and_get_output("zpool status"))
+    pools_status = split_status_pools(fork_and_get_output("zpool status".split()))
     pools = []
     for p in pools_status:
         pools.append(PoolStatus(p))
