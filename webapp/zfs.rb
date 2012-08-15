@@ -2,22 +2,21 @@ require 'sinatra'
 require 'data_mapper'
 require 'yaml'
 
-# DataMapper::Logger.new(STDOUT, :debug)
-DataMapper.setup(:default, "sqlite3://#{File.dirname(__FILE__)}/zfsdata.db")
-
 require "#{File.dirname(__FILE__)}/zfsmon_data_objects"
 require "#{File.dirname(__FILE__)}/zfs_utils"
 require "#{File.dirname(__FILE__)}/zfs_ssh"
 
-DataMapper.finalize.auto_upgrade!
-
-set :environment, :production
 configure do
     enable :static
 end
+$WD = File.dirname(__FILE__)
+if $WD == '.' then $WD = Dir.pwd end
+
+# DataMapper::Logger.new(STDOUT, :debug) if (settings.environment != :production)
+DataMapper.setup(:default, "sqlite3://#{File.join($WD, 'zfsdata.db')}")
+DataMapper.finalize.auto_upgrade!
 
 helpers ZUtil
-
 helpers do
     def host_not_found( request="" )
         status 404

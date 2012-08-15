@@ -209,7 +209,7 @@ def post_pool_status(ps, hostname, server):
         pool = p.name
         headers = {'content-type': 'application/json'}
         try:
-            postreq = requests.post( server + '/' + hostname + '/pools/' + pool + '/status', data=p.json, headers=headers, proxies=PROXIES)
+            postreq = requests.post( server + '/' + hostname + '/pools/' + pool + '/status', data=p.to_json(), headers=headers, proxies=PROXIES)
         except:
             return False
         if postreq.status_code / 100 != 2:
@@ -295,10 +295,10 @@ def split_status_pools(sp):
             if first_pool:
                 first_pool = False
             else:
-                pools.append(''.join(status))
+                pools.append('\n'.join(status))
                 status = []
         status.append(line)
-    pools.append(''.join(status))
+    pools.append('\n'.join(status))
     return pools
 
 def parse_cli_args(args):
