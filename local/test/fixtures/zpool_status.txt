@@ -1,0 +1,52 @@
+  pool: datapool
+ state: ONLINE
+ scan: scrub repaired 0 in 6h7m with 0 errors on Mon Jul 23 17:33:07 2012
+config:
+
+	NAME                                       STATE     READ WRITE CKSUM
+	datapool                                   ONLINE       0     0     0
+	  raidz1-0                                 ONLINE       0     0     0
+	    c0t600C0FF0000000000925650E185D4300d0  ONLINE       0     0     0
+	    c0t600C0FF0000000000925651A51930C00d0  ONLINE       0     0     0
+	    c0t600C0FF0000000000925652DEE5F9600d0  ONLINE       0     0     0
+	    c0t600C0FF0000000000925653A9C6FB800d0  ONLINE       0     0     0
+	    c0t600C0FF0000000000925655BFC643600d0  ONLINE       0     0     0
+	    c0t600C0FF0000000000925655C77EA4700d0  ONLINE       0     0     0
+	  raidz1-1                                 ONLINE       0     0     0
+	    c0t600C0FF0000000000925656BCA883700d0  ONLINE       0     0     0
+	    c0t600C0FF0000000000925656ED0167500d0  ONLINE       0     0     0
+	    c0t600C0FF0000000000925657E6ED02700d0  ONLINE       0     0     0
+	    c0t600C0FF00000000009256505A1B72500d0  ONLINE       0     0     0
+	    c0t600C0FF00000000009256516EC2C5400d0  ONLINE       0     0     0
+	    c0t600C0FF00000000009256520A9FAE500d0  ONLINE       0     0     0
+	  raidz1-2                                 ONLINE       0     0     0
+	    c0t600C0FF00000000009256539C3175100d0  ONLINE       0     0     0
+	    c0t600C0FF00000000009256546D19D7700d0  ONLINE       0     0     0
+	    c0t600C0FF00000000009256558D90D6300d0  ONLINE       0     0     0
+	    c0t600C0FF00000000009256563E0D7B100d0  ONLINE       0     0     0
+	    c0t600C0FF000000000092565096C7BD300d0  ONLINE       0     0     0
+	    c0t600C0FF000000000092565111D74F300d0  ONLINE       0     0     0
+	  raidz1-3                                 ONLINE       0     0     0
+	    c0t600C0FF000000000092565385FB4FA00d0  ONLINE       0     0     0
+	    c0t600C0FF000000000092565452FD03A00d0  ONLINE       0     0     0
+	    c0t600C0FF0000000000925653029EBB100d0  ONLINE       0     0     0
+	    c0t600C0FF000000000092565424736EF00d0  ONLINE       0     0     0
+	    c0t600C0FF0000000000925651677876800d0  ONLINE       0     0     0
+	spares
+	  c0t600C0FF0000000000925657986532400d0    AVAIL   
+
+errors: No known data errors
+
+
+
+
+  pool: rpool
+ state: ONLINE
+ scan: none requested
+config:
+
+	NAME        STATE     READ WRITE CKSUM
+	rpool       ONLINE       0     0     0
+	  c8t0d0s0  ONLINE       0     0     0
+
+errors: No known data errors
