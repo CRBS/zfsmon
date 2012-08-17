@@ -58,10 +58,11 @@ class ZFSPool
     property :id,               Serial
     property :lastupdate,       DateTime
     belongs_to :host,           :model => 'ZFSHost'
+    has n, :vdevs,              :model => 'Vdev', :constraint => :destroy
 
     # The name of the ZFS pool
     property :name,             String, :required => true
-    
+
     # A unique ID for the dataset (the SHA-1 hash of the hostname + the name of the pool)
     property :dsuniqueid,       String, :required => true, :unique => true
 
@@ -548,4 +549,16 @@ class ZFSSnap
     property :rstchown,         Boolean
 end
 
+class Vdev
+  include DataMapper::Resource
+  property :id,             Serial 
+  property :lastupdate,     DateTime
+  has n, :children,         :model => 'Vdev', :constraint => :destroy
+
+  property :name,           String, :required => true
+  property :state,          String, :required => true
+  property :read_errors,    Integer, :default => 0
+  property :write_errors,   Integer, :default => 0
+  property :cksum_errors,   Integer, :default => 0
+end
 
