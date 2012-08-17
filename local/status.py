@@ -29,7 +29,7 @@ class PoolStatus(object):
         self.name = self.properties['pool']
 
     def to_json(self):
-        return json.dumps(self.properties, cls=status.SLEncoder)
+        return json.dumps(self.properties, cls=SLEncoder)
 
     def to_yaml(self):
         pass
