@@ -26,30 +26,31 @@
 <div class="row">
     <div class="span8">
         <h2><a href="/<%= "#{@host.hostname}/pools/#{@pool.name}" %>"><%= @pool.name %></a></h2>
-        <h3>Status</h3>
-        <table class="table-striped fixed">
-            <tr>
-                <td><strong>State: </strong></td>
-                <td><% case @pool.state.downcase; when 'online' then %>
-                        <span class="label label-success">
-                    <% when 'degraded' then %>
-                        <span class="label label-warning">
-                    <% when 'faulted', 'removed', 'unavail' then %>
-                        <span class="label label-important">
-                    <% when 'offline' then %>
-                        <span class="label">
-                    <% end %>
-                    <%= @pool.state.downcase %>
-                </span></td>
-            </tr>
-            <tr>
-                <td><strong>Errors: </strong></td><td><%= @pool.z_errors %></td>
-            </tr>
-            <tr>
-                <td><strong>Scan: </strong></td><td><%= @pool.scan %></td>
-            </tr>
-        </table>&nbsp;
-
+        <% if @pool.state %>
+            <h3>Status</h3>
+            <table class="table-striped fixed">
+                <tr>
+                    <td><strong>State: </strong></td>
+                    <td><% case @pool.state.downcase; when 'online' then %>
+                            <span class="label label-success">
+                        <% when 'degraded' then %>
+                            <span class="label label-warning">
+                        <% when 'faulted', 'removed', 'unavail' then %>
+                            <span class="label label-important">
+                        <% when 'offline' then %>
+                            <span class="label">
+                        <% end %>
+                        <%= @pool.state.downcase %>
+                    </span></td>
+                </tr>
+                <tr>
+                    <td><strong>Errors: </strong></td><td><%= @pool.z_errors %></td>
+                </tr>
+                <tr>
+                    <td><strong>Scan: </strong></td><td><%= @pool.scan %></td>
+                </tr>
+            </table>&nbsp;
+        <% end %>
         <h3>Storage</h3>
         <table class="table-striped fixed" id="storage-table">
             <tr>
