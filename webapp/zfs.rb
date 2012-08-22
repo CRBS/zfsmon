@@ -380,7 +380,7 @@ post '/:host/pools/:pool/status/?' do
     @pool.state = status['state']
     @pool.z_errors = status['errors']
     @pool.scan = status['scan']
-    
+
     # ditch the existing vdev records
     @pool.vdevs.each {|v| v.destroy!}
     status['config'].each do |v|
