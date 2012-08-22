@@ -158,7 +158,7 @@ get '/:host/pools/:pool/?' do
     @pool = ZUtil.get_pool_record @host, params[:pool]
     if not @pool
         status 404
-        "The requested pool could not be found on " + params[:hostname] + "."
+        "The requested pool could not be found on " + params[:host] + "."
     end
     @title = "Details for #{@pool.name}"
     erb :pooldetail

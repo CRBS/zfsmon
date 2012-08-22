@@ -87,12 +87,14 @@
                 </span></td>
             </tr>
         </table>&nbsp;
-        <h3>Configuration</h3>
-        <div class="well" style="width: 65%;">
-            <% @pool.vdevs.each do |vdev| %>
-                <%= ZUtil.generate_collapsible_vdev_tree(vdev) %>
-            <% end %>
-        </div>&nbsp;
+        <% if @pool.vdevs && @pool.vdevs.size > 0 %>
+            <h3>Configuration</h3>
+            <div class="well" style="width: 65%;">
+                <% @pool.vdevs.each do |vdev| %>
+                    <%= ZUtil.generate_collapsible_vdev_tree(vdev) %>
+                <% end %>
+            </div>&nbsp;
+        <% end %>
         <h3>Properties</h3>
         <table class="table-striped sortable fixed">
             <tr><th>Property</th><th>Value</th></tr>
