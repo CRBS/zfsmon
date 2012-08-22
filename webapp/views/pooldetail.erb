@@ -1,3 +1,9 @@
+<script type="application/javascript">
+    $(document).ready(function() {
+            $('.status_pop').popover({ 'html': true, 'trigger': 'hover', 'placement': 'right' });
+    });
+</script>
+
 <div class="row">
     <div class="span6">
         <h3><%= ZUtil.build_breadcrumb_string [@host.hostname, "pools", @pool.name] %></h3>
@@ -13,18 +19,15 @@
 <hr />
 <style type="text/css">
     table.fixed {
-        table-layout: fixed; 
-        width: 70%;
-    }
+      table-layout: fixed;
+      width: 70%;
+  }
 </style>
 <div class="row">
     <div class="span8">
         <h2><a href="/<%= "#{@host.hostname}/pools/#{@pool.name}" %>"><%= @pool.name %></a></h2>
         <h3>Status</h3>
         <table class="table-striped fixed">
-            <tr>
-                <td><strong>Errors: </strong></td><td><%= @pool.z_errors %></td>
-            </tr>
             <tr>
                 <td><strong>State: </strong></td>
                 <td><% case @pool.state.downcase; when 'online' then %>
@@ -38,15 +41,17 @@
                     <% end %>
                     <%= @pool.state.downcase %>
                 </span></td>
-</td>
+            </tr>
+            <tr>
+                <td><strong>Errors: </strong></td><td><%= @pool.z_errors %></td>
             </tr>
             <tr>
                 <td><strong>Scan: </strong></td><td><%= @pool.scan %></td>
             </tr>
         </table>&nbsp;
-        
+
         <h3>Storage</h3>
-        <table class="table-striped fixed">
+        <table class="table-striped fixed" id="storage-table">
             <tr>
                 <td title="<%= ZUtil.get_desc :pool, 'free' %>"><strong>Free: </strong></td>
                 <td title="<%= "#{@pool.free} bytes" %>"><%= ZUtil.convert_human_bytes @pool.free %></td>
@@ -83,7 +88,11 @@
             </tr>
         </table>&nbsp;
         <h3>Configuration</h3>
-            <div>&nbsp;</div>        
+        <div class="well" style="width: 65%;">
+            <% @pool.vdevs.each do |vdev| %>
+                <%= ZUtil.generate_collapsible_vdev_tree(vdev) %>
+            <% end %>
+        </div>&nbsp;
         <h3>Properties</h3>
         <table class="table-striped sortable fixed">
             <tr><th>Property</th><th>Value</th></tr>
@@ -95,8 +104,10 @@
                 <td><strong>Auto Expand: </strong></td>
                 <td><%= ZUtil.build_bool_label @pool.expand %></td>
             </tr>
-            <tr title="<%= ZUtil.get_desc :pool, 'replace' %>"><td><strong>Auto Replace: </strong></td>
-                                                            <td><%= ZUtil.build_bool_label @pool.replace %></td></tr>
+            <tr title="<%= ZUtil.get_desc :pool, 'replace' %>">
+                <td><strong>Auto Replace: </strong></td>
+                <td><%= ZUtil.build_bool_label @pool.replace %></td>
+            </tr>
             <tr title="<%= ZUtil.get_desc :pool, 'bootfs' %>">
                 <td><strong>Boot FS: </strong></td>
                 <td><%= '<code>' << @pool.bootfs << '</code>' if @pool.bootfs %></td>
@@ -109,8 +120,10 @@
                 <td><strong>Dedup Ratio: </strong></td>
                 <td><%= @pool.dedup %></td>
             </tr>
-            <tr title="<%= ZUtil.get_desc :pool, 'delegation' %>"><td><strong>Delegation: </strong></td>
-                                                            <td><%= ZUtil.build_bool_label @pool.delegation %></td></tr>
+            <tr title="<%= ZUtil.get_desc :pool, 'delegation' %>">
+                <td><strong>Delegation: </strong></td>
+                <td><%= ZUtil.build_bool_label @pool.delegation %></td>
+            </tr>
             <tr title="<%= ZUtil.get_desc :pool, 'dedupditto' %>">
                 <td><strong>Ditto Copy Threshold: </strong></td>
                 <td><%= @pool.dedupditto %></td>
@@ -139,6 +152,3 @@
         &nbsp;
     </div>
 </div>
-            
-            
-            
