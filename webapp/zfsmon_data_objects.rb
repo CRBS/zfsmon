@@ -58,7 +58,7 @@ class ZFSPool
     property :id,               Serial
     property :lastupdate,       DateTime
     belongs_to :host,           :model => 'ZFSHost'
-    has n, :vdevs,              :model => 'Vdev', :constraint => :destroy
+    has n, :vdevs,              :model => 'Vdev', :child_key => [ :parent_vdev_id ]
 
     # The name of the ZFS pool
     property :name,             String, :required => true
@@ -78,6 +78,11 @@ class ZFSPool
     
     # Health can be 'online', 'degraded', or 'faulted'. See zpool man page for details.
     property :health,           Enum[ :online, :degraded, :faulted, :unavail ], :required => true
+
+    # Extra properties reported from zpool status
+    property :state,            String
+    property :scan,             String, :length => 255
+    property :z_errors,         String
 
     # Unique identifier for this pool
     property :guid,             String, :required => true, :unique => true
@@ -553,10 +558,13 @@ class Vdev
   include DataMapper::Resource
   property :id,             Serial 
   property :lastupdate,     DateTime
-  has n, :children,         :model => 'Vdev', :constraint => :destroy
 
-  property :name,           String, :required => true
-  property :state,          String, :required => true
+  has n, :children,         :model => 'Vdev', :constraint => :destroy, :child_key => [:parent_vdev_id]
+  belongs_to :parent_vdev,  :model => 'Vdev', :required => false
+  belongs_to :parent_pool,  :model => 'ZFSPool', :required => true
+
+  property :name,           String, :required => true, :length => 255
+  property :state,          String, :required => false
   property :read_errors,    Integer, :default => 0
   property :write_errors,   Integer, :default => 0
   property :cksum_errors,   Integer, :default => 0

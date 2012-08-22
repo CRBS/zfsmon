@@ -1,6 +1,8 @@
 require 'sinatra'
 require 'data_mapper'
 require 'yaml'
+require 'json'
+require 'colorize'
 
 require "#{File.dirname(__FILE__)}/zfsmon_data_objects"
 require "#{File.dirname(__FILE__)}/zfs_utils"
@@ -18,6 +20,36 @@ DataMapper.finalize.auto_upgrade!
 
 helpers ZUtil
 helpers do
+   def make_vdevs(vdev, parent_pool = nil, parent_vdev = nil)
+      v = Vdev.new
+      v.name = vdev['name']
+      v.state = vdev['state']
+      if vdev['errors']
+        v.read_errors = vdev['errors']['read']
+        v.write_errors = vdev['errors']['write']
+        v.cksum_errors = vdev['errors']['cksum']
+      end
+      v.parent_pool = parent_pool
+      if not v.save!
+        status 500
+        raise "Unable to save the vdev hierarchy for #{parent_pool}"
+      end
+      v.parent_vdev = parent_vdev
+      if vdev['children'] && vdev['children'].size > 0
+        vdev['children'].each do |c|
+          id = make_vdevs(c, parent_pool, v)
+          child = Vdev.get(id)
+          v.children << child
+        end
+      end
+      if not v.save!
+        status 500
+        raise "Unable to save the vdev hierarchy for #{parent_pool}"
+      else
+        return v.id
+      end
+    end
+
     def host_not_found( request="" )
         status 404
         "The provided host ID or hostname " + request.to_s + " could not be found in the database."
@@ -98,7 +130,7 @@ post '/:host/?' do
             status 503
             'DM was unable to create a new host record in the database.'
             z.errors.each do |e|
-                puts e
+                STDERR.puts e.red
             end
         else
             status 201
@@ -182,9 +214,9 @@ post '/:host/pools/:pool/?' do
         @pool.save
     end
     if not @pool.saved? then
-        puts "------- error saving #{@pool.name} -------"
+        STDERR.puts "------- error saving #{@pool.name} -------".red
         @pool.errors.each do |e|
-            puts e.to_s
+            STDERR.puts e.to_s.red
         end
     end
 end
@@ -317,10 +349,57 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
     @snap.save
     end
     if not @snap.saved? then
-        puts "------- error saving #{@snap.name} -------"
+        STDERR.puts "------- error saving #{@snap.name} -------".red
         @snap.errors.each do |e|
-            puts e.to_s
+            STDERR.puts e.to_s.red
         end
+    end
+end
+
+get '/:host/pools/:pool/status.yml' do
+    @host = ZUtil.get_host_record params[:host]
+    if not @host
+        host_not_found params[:host]
+    end
+    @pool = ZUtil.get_pool_record @host, params[:pool]
+    str = "<h3>#{@pool.name} has #{@pool.vdevs.size} children.</h3>"
+    @pool.vdevs.each do |v|
+      str << "<pre>#{v.to_yaml}</pre>"
+      if v.children.size > 0 then str << "<pre>#{v.children.to_yaml}</pre>" end
+    end
+    return str
+end
+
+post '/:host/pools/:pool/status/?' do
+    @host = ZUtil.get_host_record params[:host]
+    if not @host
+        host_not_found params[:host]
+    end
+    @pool = ZUtil.get_pool_record @host, params[:pool]
+    status = JSON.load(request.body)
+    @pool.state = status['state']
+    @pool.z_errors = status['errors']
+    @pool.scan = status['scan']
+    
+    # ditch the existing vdev records
+    @pool.vdevs.each {|v| v.destroy!}
+    status['config'].each do |v|
+      begin
+        child = Vdev.get(make_vdevs(v, @pool))
+        @pool.vdevs << child if child
+      rescue Exception => e
+        status 500
+        STDERR.puts e.inspect.red
+        return "There was a problem creating the vdev hierarchy for #{@pool.name}."
+      end
+    end
+    if not @pool.save
+      STDERR.puts "--- errors saving #{@pool.name}".red
+      STDERR.puts "--- #{@pool.errors.inspect}".red
+      status 500
+      return "There was a problem saving #{@pool.name}."
+    else
+      status 200
     end
 end
 
@@ -396,9 +475,9 @@ post '/:host/datasets/:ds/?' do
         @ds.save
     end
     if not @ds.saved? then
-        puts "------- error saving #{@ds.name} -------"
+        STDERR.puts "------- error saving #{@ds.name} -------".red
         @ds.errors.each do |e|
-            puts e.to_s
+            STDERR.puts e.to_s.red
         end
     end
 end
