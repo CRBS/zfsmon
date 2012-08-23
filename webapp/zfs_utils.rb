@@ -209,13 +209,15 @@ module ZUtil
 
         html = <<-END
           <p>#{%[<strong style="font-size: ] + header_size + %[">] if root.children && root.children.size > 0}
-            <span class="status_pop" id="pop-#{css_id}" title="Status of #{ if (root.name.length > 11) then (root.name[0..7] + '...') else root.name end}"
+            <span class="status_pop" id="pop-#{css_id}" title="Status of #{ if (root.name.length > 11) then (root.name[0..3] + root.name[-2..-1]) else root.name end}"
              data-content="#{data_content}">
-              <a href="##{css_id}" data-toggle="collapse" data-target="##{css_id}" data-parent="##{parent_css_id}"#{%[ style="color: red !important;"] if total_errors >= 5}>#{root.name}</a>
+              <a href="##{css_id}" data-toggle="collapse" data-target="##{css_id}" 
+               data-parent="##{parent_css_id}"#{%[ style="color: red !important; font-weight: bold;"] if (total_errors >= 5 || (root.state && root.state.downcase != 'online'))}>
+                #{root.name}
+              </a>
             </span>
           #{'</strong>' if root.children.size > 0}</p>
         END
-
         if root.children && root.children.size > 0
           html << %[\n<div id="#{css_id}" class="collapse" style="margin-left: #{indent*15}px">]
             root.children.each do |c|
