@@ -221,6 +221,7 @@ module ZUtil
         if root.children && root.children.size > 0
           html << %[\n<div id="#{css_id}" class="collapse" style="margin-left: #{indent*15}px">]
             root.children.each do |c|
+                next if c.id == root.id
                 html << ZUtil.generate_collapsible_vdev_tree(c, indent, css_id)
             end
           return html << "\n</div>"
