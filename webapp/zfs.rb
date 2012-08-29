@@ -362,10 +362,9 @@ get '/:host/pools/:pool/status.yml' do
         host_not_found params[:host]
     end
     @pool = ZUtil.get_pool_record @host, params[:pool]
-    str = "<h3>#{@pool.name} has #{@pool.vdevs.size} children.</h3>"
+    str = ''
     @pool.vdevs.each do |v|
-      str << "<pre>#{v.to_yaml}</pre>"
-      if v.children.size > 0 then str << "<pre>#{v.children.to_yaml}</pre>" end
+      str << ZUtil.get_vdev_hierarchy(v) << "\n"
     end
     return str
 end
