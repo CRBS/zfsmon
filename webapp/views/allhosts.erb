@@ -39,7 +39,7 @@
                 <% end %>
                 <% if host.lastupdate.to_time < (Time.now - (2 * 60 * 60)) then %>
                         <div class="alert alert-danger">
-                           This host has not checked in since <span title="<%= host.lastupdate.to_s(:rfc822) %>"><%= ZUtil.time_ago_in_words(host.lastupdate) %> ago.</span>
+                           This host stopped checking in <span title="<%= host.lastupdate.to_s(:rfc822) %>"><%= ZUtil.time_ago_in_words(host.lastupdate) %> ago.</span>
                         </div>
                 <% end %>
             </div>
