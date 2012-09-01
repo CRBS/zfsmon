@@ -1,6 +1,7 @@
 import hashlib
 import socket
 import json
+import logging
 from urllib2 import quote
 
 class StatusLine(json.JSONEncoder):
@@ -51,7 +52,7 @@ class PoolStatus(object):
             if property == 'config':
                 status['config'] = []
                 continue
-            elif line.startswith('\t') and 'config' in status:
+            elif line.startswith('\t') and delim == '' and 'config' in status:
                 status['config'].append(line[1:])
                 continue
             else:
@@ -81,9 +82,12 @@ class PoolStatus(object):
             if len(fields) == 5:
                 sl.state = fields[1]
                 sl.errors = {}
-                sl.errors['read'] = int(fields[2])
-                sl.errors['write'] = int(fields[3])
-                sl.errors['cksum'] = int(fields[4])
+                try:
+                    sl.errors['read'] = int(fields[2])
+                    sl.errors['write'] = int(fields[3])
+                    sl.errors['cksum'] = int(fields[4])
+                except ValueError as e:
+                    logging.getLogger('zfsmon').info(str(e))
 
             # If the indent is 0, it's a root node
             if indent == 0:
