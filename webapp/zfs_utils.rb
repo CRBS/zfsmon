@@ -190,7 +190,9 @@ module ZUtil
     def ZUtil.generate_collapsible_vdev_tree( root, indent=1, parent_css_id='' )
         css_id = root.name + root.id.to_s
         header_size = parent_css_id == '' ? 'large' : 'medium'
-        total_errors = root.read_errors + root.write_errors + root.cksum_errors
+        if root.read_errors && root.write_errors && root.cksum_errors
+          total_errors = root.read_errors + root.write_errors + root.cksum_errors
+        end
         data_content = <<-END
           <table>
             #{%[<tr><td><strong>State: </strong></td><td>#{root.state}</td></tr>] if root.state }
