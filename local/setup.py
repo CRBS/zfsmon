@@ -2,7 +2,7 @@
 from setuptools import setup
 
 setup( name = 'zfsmond',
-       version = '0.3.0',
+       version = '0.3.1',
        description = 'ZFS Monitoring Script',
        author = 'Jenner LaFave',
        author_email = 'jlafave@ucsd.edu',
