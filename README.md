@@ -22,6 +22,7 @@ A picture is worth a thousand words, so [here are 5000 of them](http://imgur.com
    For example,
    ```
         rainbowdash: cool123
+
         someguy: changeme
     ```
 4. ```ruby start.rb start```
