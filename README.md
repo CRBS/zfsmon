@@ -20,16 +20,16 @@ A picture is worth a thousand words, so [here are 5000 of them](http://imgur.com
 3. Add a file called auth.yml to this directory with username-password combos for anyone you want
    to have access to protected resources (deleting hosts, etc.)
    For example,
-   ```yaml
+   ```
         rainbowdash: cool123
         someguy: changeme
     ```
-4. ```bash ruby start.rb start```
+4. ```ruby start.rb start```
 5. This will start a server on port 4567 using a sqlite database in the directory you unzipped to.
 6. Next, add a reverse proxy from nginx or Apache to the Thin server on 4567. With Apache,
    you can usually just add these lines to your httpd.conf or to the Vhost you want to host
    the webapp on:
-   ```conf
+   ```
    ProxyPass           / http://localhost:4567/
    ProxyPassReverse    / http://localhost:4567/
    ProxyVia            On
