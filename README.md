@@ -31,6 +31,8 @@ A picture is worth a thousand words, so [here are 5000 of them](http://imgur.com
    the webapp on:
    ```
    ProxyPass           / http://localhost:4567/
+
    ProxyPassReverse    / http://localhost:4567/
+
    ProxyVia            On
    ```
