@@ -2,7 +2,7 @@ require 'sinatra'
 require 'data_mapper'
 require 'yaml'
 require 'json'
-require 'colorize'
+require 'colored'
 
 require "#{File.dirname(__FILE__)}/zfsmon_data_objects"
 require "#{File.dirname(__FILE__)}/zfs_utils"
