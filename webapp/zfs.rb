@@ -2,7 +2,6 @@ require 'sinatra'
 require 'data_mapper'
 require 'yaml'
 require 'json'
-require 'colorize'
 
 require "#{File.dirname(__FILE__)}/zfsmon_data_objects"
 require "#{File.dirname(__FILE__)}/zfs_utils"
@@ -130,7 +129,7 @@ post '/:host/?' do
             status 503
             'DM was unable to create a new host record in the database.'
             z.errors.each do |e|
-                STDERR.puts e.red
+                STDERR.puts e
             end
         else
             status 201
@@ -214,9 +213,9 @@ post '/:host/pools/:pool/?' do
         @pool.save
     end
     if not @pool.saved? then
-        STDERR.puts "------- error saving #{@pool.name} -------".red
+        STDERR.puts "------- error saving #{@pool.name} -------"
         @pool.errors.each do |e|
-            STDERR.puts e.to_s.red
+            STDERR.puts e.to_s
         end
     end
 end
@@ -349,9 +348,9 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
     @snap.save
     end
     if not @snap.saved? then
-        STDERR.puts "------- error saving #{@snap.name} -------".red
+        STDERR.puts "------- error saving #{@snap.name} -------"
         @snap.errors.each do |e|
-            STDERR.puts e.to_s.red
+            STDERR.puts e.to_s
         end
     end
 end
@@ -388,13 +387,13 @@ post '/:host/pools/:pool/status/?' do
         @pool.vdevs << child if child
       rescue Exception => e
         status 500
-        STDERR.puts e.inspect.red
+        STDERR.puts e.inspect
         return "There was a problem creating the vdev hierarchy for #{@pool.name}."
       end
     end
     if not @pool.save
-      STDERR.puts "--- errors saving #{@pool.name}".red
-      STDERR.puts "--- #{@pool.errors.inspect}".red
+      STDERR.puts "--- errors saving #{@pool.name}"
+      STDERR.puts "--- #{@pool.errors.inspect}"
       status 500
       return "There was a problem saving #{@pool.name}."
     else
@@ -474,9 +473,9 @@ post '/:host/datasets/:ds/?' do
         @ds.save
     end
     if not @ds.saved? then
-        STDERR.puts "------- error saving #{@ds.name} -------".red
+        STDERR.puts "------- error saving #{@ds.name} -------"
         @ds.errors.each do |e|
-            STDERR.puts e.to_s.red
+            STDERR.puts e.to_s
         end
     end
 end
