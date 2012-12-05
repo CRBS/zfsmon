@@ -4,15 +4,15 @@
             'height': $('.well').height()
             });
         // reload the page every 2 minutes
-        setInterval(function() {
+        setTimeout(function() {
             $.ajax({
                 url: "",
                 context: document.body,
                 success: function(s, x) {
-                    $(this).html(s);
+                    $(this).unbind().empty().html(s);
                 }
             })
-        }, (2 * 60 * 1000));
+        }, (15 * 1000));
         });
 </script>
 <span>Show:&nbsp;
