@@ -5,14 +5,8 @@
             });
         // reload the page every 2 minutes
         setTimeout(function() {
-            $.ajax({
-                url: "",
-                context: document.body,
-                success: function(s, x) {
-                    $(this).unbind().empty().html(s);
-                }
-            })
-        }, (2 * 60 * 1000));
+            location.reload(true)
+            }, (2 * 60 * 1000));
         });
 </script>
 <span>Show:&nbsp;
