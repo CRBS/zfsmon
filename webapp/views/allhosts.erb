@@ -22,43 +22,15 @@
         <a href="/?show=errored">Faulted</a>
     <%= "</strong>" if @show == :errored %>
 </span>
-<% if @allhosts then %>
-    <div class="row">
-    <% @allhosts.each_with_index do |host, index| %>
-            <div class="span5 well" <%= "style=\"height: 100%; #{ZUtil.get_background_color_for_status(ZUtil.get_status_for_host(host))}\"" %>>
-                <h2><a href="/<%= host.hostname %>"><%= host.hostname %></a></h2>
-                <p><%= host.userdescription or host.hostdescription %></p>
-                <ul>
-                    <li><a href="/<%= host.hostname %>/pools">Pools</a>: <%= host.pools.count %></li>
-                    <li><a href="/<%= host.hostname %>/datasets">Datasets</a>: <%= host.datasets.count %></li>
-                </ul>
-                <p><strong>Last update:</strong> <%= host.lastupdate.strftime format='%A, %B %d, %Y at&nbsp;%l:%M %P ' %></p>
-                <% if @show == :errored && host.unhealthy_pools.size > 0 %>
-                    <h4>Errors:</h4>
-                    <ul>
-                        <% host.unhealthy_pools.each do |pool| %>
-                            <li><strong><a href="/<%= host.hostname %>/pools/<%= pool.name %>"><%= pool.name %></a>:</strong>&nbsp;<%= pool.health %></li>
-                        <% end %>
-                    </ul>
-                <% end %>
-                <% if host.lastupdate.to_time < (Time.now - (2 * 60 * 60)) then %>
-                        <div class="alert alert-danger">
-                           This host stopped checking in <span title="<%= host.lastupdate.to_s(:rfc822) %>"><%= ZUtil.time_ago_in_words(host.lastupdate) %> ago.</span>
-                        </div>
-                <% end %>
-            </div>
-        <% if ((index+1) % 2 == 0) && (index > 0) %>
-            </div><div class="row">
-        <% end %>
-    <% end %>
-    </div>
-    
-<% else %>
-
+<% if @allhosts.size == 0 %>
     <div class="row">
         <div class="span8">
             <p>No active hosts were found.</p>
         </div>
     </div>
-    
+<% elsif @allhosts.size <= 4 %>
+    <% # references @show and @allhosts %>
+    <%= erb :allhosts_grid %>
+<% else %>
+    <%= erb :allhosts_table %>
 <% end %>

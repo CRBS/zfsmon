@@ -1,0 +1,24 @@
+<div class="row">
+    <div class="span12">
+        <table id="allhosts_table" class="table table-striped sorted">
+        <tr>
+            <th>Hostname</th>
+            <th>Description</th>
+            <th>Pools</th>
+            <th>Datasets</th>
+            <th>Last Update</th>
+            <th>Status</th>
+        </tr>
+        <% @allhosts.each do |host| %>
+            <tr id="host_<%= host.hostname %>"
+                <%= if host.unhealthy_pools.size > 0 then %[style="#{ZUtil.get_background_color_for_status(ZUtil.get_status_for_host(host))}"] else "" end %>>
+                <td><a href="/<%= host.hostname %>"><%= host.hostname %></a></td>
+                <td><%= host.userdescription or host.hostdescription %></td>
+                <td><a href="/<%= host.hostname %>/pools"><%= host.pools.count %></a></td>
+                <td><a href="/<%= host.hostname %>/datasets"><%= host.datasets.count %></a></td>
+                <td><%= host.lastupdate.strftime format='%A, %B %d, %Y at&nbsp;%l:%M %P ' %></td>
+                <td><%= if (host.lastupdate.to_time < (Time.now - (2 * 60 * 60))) then "Stale!" else ZUtil.get_status_for_host(host) end %></td>
+            </tr>
+        <% end %>
+    </div>
+</div>
