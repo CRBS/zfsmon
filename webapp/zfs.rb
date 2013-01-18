@@ -82,7 +82,7 @@ get '/' do
       @allhosts = (ZFSHost.all :order => [ :hostname.asc ]) - ZFSHost.errored
       @show = :healthy
     else
-      @allhosts = ZFSHost.all :order => [ :hostname.asc ]
+      @allhosts = ZFSHost.all :order => [ :status.desc, :hostname.asc ]
       @show = :all
     end
     @title = 'All Hosts'

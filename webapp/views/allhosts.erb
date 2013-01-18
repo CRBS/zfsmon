@@ -30,7 +30,7 @@
     </div>
 <% elsif @allhosts.size <= 4 %>
     <% # references @show and @allhosts %>
-    <%= erb :allhosts_grid %>
+    <%= erb :allhosts_grid, :layout => false %>
 <% else %>
-    <%= erb :allhosts_table %>
+    <%= erb :allhosts_table, :layout => false %>
 <% end %>

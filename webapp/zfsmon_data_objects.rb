@@ -43,11 +43,11 @@ class ZFSHost
     end
 
     def self.stale
-        all :lastupdate.lte => Time.now - (60 * 60 * 1), :order => [ :hostname.asc ]
+        all :lastupdate.lte => Time.now - (60 * 60 * 1), :order => [ :status.desc, :hostname.asc ]
     end
 
     def self.errored
-        all :status.not => :healthy, :order => [ :hostname.asc ]
+        all :status.not => :healthy, :order => [ :status.desc, :hostname.asc ]
     end
 
 end

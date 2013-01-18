@@ -300,11 +300,11 @@ module ZUtil
     def ZUtil.get_background_color_for_status(status)
         case status
           when :degraded
-            'background-color: #FFBD47'
+            'background: #FFBD47'
           when :faulted
-            'background-color: #FF8F50'
+            'background: #FF8F50'
           when :unavail
-            'background-color: #6F6F6F; color: #FFFFFF'
+            'background: #6F6F6F; color: #FFFFFF'
           else
             ''
         end
