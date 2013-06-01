@@ -59,7 +59,7 @@ class DataZFS(object):
     def parse_size(size):
         """ Parses the size value as output from zfs or zpool into a number of bytes.
         Checks if the size is '-' or 'none' and returns zero if it is."""
-        MULTIPLIERS = {'K': 10**3, 'M': 10**6, 'G': 10**9, 'T': 10**12, 'P': 10**15}
+        MULTIPLIERS = {'K': 2**(10*1), 'M': 2**(10*2), 'G': 2**(10*3), 'T': 2**(10*4), 'P': 2**(10*5)}
         if size in ['-', 'none']: return 0
         try:
             sint = int(size)
