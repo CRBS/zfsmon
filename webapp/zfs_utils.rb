@@ -248,8 +248,8 @@ module ZUtil
         return '' if not size
         suffixes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
         i = 0
-        while size > 1000 do
-            size = size / 1000.0
+        while size > 1024 do
+            size = size / 1024.0
             i += 1
         end
         return "#{format('%.2f', size)} #{suffixes[i]}"
