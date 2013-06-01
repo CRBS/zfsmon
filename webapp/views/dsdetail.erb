@@ -46,7 +46,7 @@ table.fixed {
             </tr>
             <tr>
                 <td title="<%= ZUtil.get_desc :ds, 'avail' %>"><strong>Available:</strong></td>
-                <td title="<%= "#{@ds.used} bytes" %>"><%= ZUtil.convert_human_bytes @ds.avail %></td>
+                <td title="<%= "#{@ds.avail} bytes" %>"><%= ZUtil.convert_human_bytes @ds.avail %></td>
             </tr>
             <tr>
                 <td title="<%= ZUtil.get_desc :ds, 'refer' %>"><strong>Referenced by dataset:</strong></td>
