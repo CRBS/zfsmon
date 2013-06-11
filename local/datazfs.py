@@ -1,5 +1,6 @@
 from urllib2 import quote
 import logging
+import re
 class DataZFS(object):
     def __init__(self, properties, fields=None, type=None):
         self.properties = self.property_parse(properties, fields)
@@ -29,7 +30,7 @@ class DataZFS(object):
                         'logbias', 'dedup', 'mlslabel', 'sync', 'crypt', 
                         'keysource', 'keystatus', 'rekeydate', 'rstchown',
                         'org.opensolaris.caiman:install']
-        properties = properties.split('\t')
+        properties = re.split('\t+',properties)
         log = logging.getLogger('zfsmond')
         prop_hash = dict()
         for i, key in enumerate(header):
