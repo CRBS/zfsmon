@@ -61,7 +61,7 @@ class ZFSPool
     has n, :vdevs,              :model => 'Vdev', :child_key => [ :parent_vdev_id ]
 
     # The name of the ZFS pool
-    property :name,             String, :required => true
+    property :name,             String, :required => true, :length => 255
 
     # A unique ID for the dataset (the SHA-1 hash of the hostname + the name of the pool)
     property :dsuniqueid,       String, :required => true, :unique => true
@@ -144,7 +144,7 @@ class ZFSDataset
     has n,    :snapshots,        :model => 'ZFSSnap', :constraint => :destroy
 
     # The name of the mount
-    property :name,             String, :required => true
+    property :name,             String, :required => true, :length => 255
     
     # A unique ID for the dataset (the SHA-1 hash of the hostname + the name of the dataset)
     property :dsuniqueid,       String, :required => true, :unique => true
@@ -372,7 +372,7 @@ class ZFSSnap
     belongs_to :dataset,           :model => 'ZFSDataset'
 
     # The name of the snapshot (timestamp)
-    property :name,             String, :required => true
+    property :name,             String, :required => true, :length => 255
         
     # The type of dataset: filesystem, volume, or snapshot.
     property :type,             Enum[ :filesystem, :volume, :snapshot ], :required => true
