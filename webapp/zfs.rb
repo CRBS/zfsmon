@@ -14,7 +14,8 @@ $WD = File.dirname(__FILE__)
 if $WD == '.' then $WD = Dir.pwd end
 
 # DataMapper::Logger.new(STDOUT, :debug) if (settings.environment != :production)
-DataMapper.setup(:default, "sqlite3://#{File.join($WD, 'zfsdata.db')}")
+#DataMapper.setup(:default, "sqlite3://#{File.join($WD, 'zfsdata.db')}")
+DataMapper.setup(:default, "mysql://user:password@localhost/zfsmon")
 DataMapper.finalize.auto_upgrade!
 
 helpers ZUtil
