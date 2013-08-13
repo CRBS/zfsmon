@@ -28,6 +28,9 @@ GEM
       dm-core (~> 1.2.0)
     dm-migrations (1.2.0)
       dm-core (~> 1.2.0)
+    dm-mysql-adapter (1.2.0)
+      dm-do-adapter (~> 1.2.0)
+      do_mysql (~>0.10.13)
     dm-serializer (1.2.2)
       dm-core (~> 1.2.0)
       fastercsv (~> 1.5)
@@ -81,6 +84,7 @@ DEPENDENCIES
   colorize
   daemons
   datamapper
+  dm-mysql-adapter
   dm-sqlite-adapter
   net-ssh
   sinatra
